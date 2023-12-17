@@ -21,3 +21,4 @@ Güncel alınan 5 hatanın geçmesi için soldaki dosyalarda oluşan .vscode kla
     "version": 4
 }
 bunu yapıştırın. Geçmesi gerekli 
+**** sample projectsdeki mainSetup1 bakacağımız kod. Ona dokunmuyorum yeni pushladığım ise değiştirdiğim kod her gün değişmeye çalışacağız.Yorumları vs en son silip yenisini ekleriz
