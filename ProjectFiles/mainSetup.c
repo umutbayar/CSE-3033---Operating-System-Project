@@ -2,27 +2,101 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <sys/wait.h>
 #include <string.h>
-#include <dirent.h> 
-#include <stdbool.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <libgen.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdbool.h>
+
+#include <fcntl.h>
 #include <ctype.h>
-
-//#include <ncurses.h>
+#include <limits.h>
+#include <libgen.h>
+#include <dirent.h> 
+#include <signal.h>
  
-#define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
 
+// File read flags
 #define READ_FLAGS (O_RDONLY)
+
+// File create flags
 #define CREATE_FLAGS (O_WRONLY | O_CREAT | O_TRUNC)
+
+// File append flags
 #define APPEND_FLAGS (O_WRONLY | O_CREAT | O_APPEND)
+
+// File read permissions
 #define READ_MODES (S_IRUSR | S_IRGRP | S_IROTH)
+
+// File create permissions
 #define CREATE_MODES (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
+
+struct listProcess{
+	
+	int processNumber ;
+	pid_t pid ;	     // pid
+	char progName[50] ; // program name
+	struct listProcess *nextPtr ;
+	
+};
+typedef struct listProcess ListProcess ; 
+typedef ListProcess *ListProcessPtr;
+
+//This struct is for bookmark commands
+struct bookmark{
+
+	char progName[50] ; // program name which added into bookmark
+	struct bookmark *nextPtr ;
+
+};
+typedef struct bookmark bookmarks ; 
+typedef bookmarks *bookmarkPtr ; 
+
+struct history
+{
+	char inputArgs[90];
+	struct history *previousPtr ;
+	struct history *nextPtr ;
+};
+typedef struct history History ;
+typedef History *HistoryPtr ;
+
+void setup(char inputBuffer[], char *args[],int *bg);
+int formatOutputSymbol(char *arg);
+int checkifexecutable(const char *filename);
+int findpathof(char *pth, const char *exe);
+void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]);
+void insertBookmark(bookmarkPtr *bPtr , char progName[]);
+void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]);
+int isEmpty(ListProcessPtr sPtr);
+int isEmptyBookmark(bookmarkPtr bPtr);
+void printListBookmark(bookmarkPtr bPtr);
+void printHistory(HistoryPtr hPtr);
+void deleteStoppedList(ListProcessPtr *currentPtr);
+void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr);
+void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
+int killAllChildProcess(pid_t ppid);
+void childSignalHandler(int signum);
+void sigtstpHandler();
+void parentPart(char *args[], int *bg , pid_t childPid , ListProcessPtr *sPtr);
+void inputRedirect();
+void outputRedirect();
+void childPart(char path[], char *args[]);
+void createProcess(char path[], char *args[],int *bg,ListProcessPtr *sPtr);
+int startsWith(const char *pre, const char *str);
+int endsWith(const char *pre, const char *suffix);
+void printBookmarkUsage();
+int isInteger(char arg[]);
+void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
+void clearLine(char args[],char lineNumber[]);
+void printSearchCommand(char *fileName , char *pattern);
+void listFilesRecursively(char *basePath,char *pattern);
+void searchCommand(char *args[]);
+void printUsageOfIO();
+int checkIORedirection(char *args[]);
+void formatInput(char *args[]);
+int main(void);
 
 char inputFileName[20]; 
 char outputFileName[20];
@@ -37,13 +111,19 @@ int processNumber = 1 ; //
 pid_t parentPid ; // stores the parent pid
 pid_t fgProcessPid = 0;
 
+//This checks if list is empty or not
+int isEmpty(ListProcessPtr sPtr){return sPtr == NULL;}
+
+// isempty for bookmark struct
+int isEmptyBookmark(bookmarkPtr bPtr){return bPtr == NULL;}
+
 /* The setup function below will not return any value, but it will just: read
 in the next command line; separate it into distinct arguments (using blanks as
 delimiters), and set the args array entries to point to the beginning of what
 will become null-terminated, C-style strings. */
 
 
-void setup(char inputBuffer[], char *args[],int *background)
+void setup(char inputBuffer[], char *args[],int *bg)
 {
     int length, /* # of characters in the command line */
         i,      /* loop index for accessing inputBuffer array */
@@ -53,7 +133,7 @@ void setup(char inputBuffer[], char *args[],int *background)
     ct = 0;
         
     /* read what the user enters on the command line */
-    length = read(STDIN_FILENO,inputBuffer,MAX_LINE);  
+    length = read(STDIN_FILENO,inputBuffer,90);  
 
     /* 0 is the system predefined file descriptor for stdin (standard input),
        which is the user's screen in this case. inputBuffer by itself is the
@@ -100,7 +180,7 @@ void setup(char inputBuffer[], char *args[],int *background)
 		if (start == -1)
 		    start = i;
                 if (inputBuffer[i] == '&'){
-		    *background  = 1;
+		    *bg  = 1;
                     inputBuffer[i-1] = '\0';
 		}
 	} /* end of switch */
@@ -121,7 +201,8 @@ void setup(char inputBuffer[], char *args[],int *background)
 
 
 //This function takes the output symbol and turn it to integer value
-int formatOutputSymbol(char *arg){
+int formatOutputSymbol(char *arg)
+{
 
 	if(strcmp(arg, ">") == 0)
 		return 0;
@@ -151,21 +232,6 @@ int checkifexecutable(const char *filename)
      return statinfo.st_mode & S_IXOTH;
 }
 
-
-/* int findpathof(char *pth, const char *exe)
- *
- * Find executable by searching the PATH environment variable.
- *
- * const char *exe - executable name to search for.
- *       char *pth - the path found is stored here, space
- *                   needs to be available.
- *
- * If a path is found, returns non-zero, and the path is stored
- * in pth.  If exe is not found returns 0, with pth undefined.
- */
-
-//This function works with checkifexecutable function. 
-//It takes path and exe name. Then test it if it is executable or not.
 int findpathof(char *pth, const char *exe)
 {
      char *searchpath;
@@ -205,41 +271,8 @@ int findpathof(char *pth, const char *exe)
 }
 
 
-//This struct is for background processes
-struct listProcess{
-	
-	int processNumber ;
-	pid_t pid ;	     // pid
-	char progName[50] ; // program name
-	struct listProcess *nextPtr ;
-	
-};
 
-//This struct is for bookmark commands
-struct bookmark{
-
-	char progName[50] ; // program name which added into bookmark
-	struct bookmark *nextPtr ;
-
-};
-
-struct history
-{
-	char inputArgs[MAX_LINE];
-	struct history *previousPtr ;
-	struct history *nextPtr ;
-};
-
-//These are type definitions .
-typedef struct listProcess ListProcess ; //synonym for struct listProcess
-typedef ListProcess *ListProcessPtr; //synonym for ListProcess*
-typedef struct bookmark bookmarks ; //synonym for struct bookmark
-typedef bookmarks *bookmarkPtr ; //synonym for struct bookmarks
-typedef struct history History ; // synonym for struct history
-typedef History *HistoryPtr ;
-
-
-//This is insert function for backgrounds processes
+//This is insert function for bg process
 void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]){
 	
 	ListProcessPtr newPtr = malloc(sizeof(ListProcess)); // Create Node
@@ -335,38 +368,6 @@ void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]){
 
 }
 
-//This checks if list is empty or not
-int isEmpty(ListProcessPtr sPtr){return sPtr == NULL;}
-
-// isempty for bookmark struct
-int isEmptyBookmark(bookmarkPtr bPtr){return bPtr == NULL;}
-
-//This function prints the content of background process list
-void printList(ListProcessPtr currentPtr){
-		
-	int status ; 
-	ListProcessPtr tempPtr = currentPtr;
-	if(isEmpty(currentPtr)) fprintf(stderr, "%s", "List is empty\n");
-	else{
-		
-		puts("Running : "); 			// prints the running processes
-		while(tempPtr != NULL){				// looks all processes in linkedlist and controls if they are running or has stopped
-			if(waitpid(tempPtr->pid,&status,WNOHANG)==0)		//if process is working , this waitpid will return 0
-				printf("\t[%d] %s (Pid=%ld)\n",tempPtr->processNumber,tempPtr->progName,(long)(tempPtr->pid));
-			tempPtr = tempPtr->nextPtr;
-		}
-		puts("Finished : ");			// prints the finished processes
-		while(currentPtr != NULL){			// looks all processes in linkedlist and controls if they are running or has stopped
-			if(waitpid(currentPtr->pid,&status,WNOHANG)==-1)		//if process has stopped , this waitpid will return -1
-				printf("\t[%d] %s (Pid=%ld)\n",currentPtr->processNumber,currentPtr->progName,(long)(currentPtr->pid));
-			currentPtr = currentPtr->nextPtr;
-		}
-		
-		puts("\n");
-		
-		}
-	
-}
 
 //This function is for printing the content of bookmark list
 void printListBookmark(bookmarkPtr bPtr){
@@ -398,7 +399,7 @@ void printHistory(HistoryPtr hPtr){
 
 }
 
-//This function is for deleting dead processes from background processes list
+//This function is for deleting dead processes from bg processes list
 void deleteStoppedList(ListProcessPtr *currentPtr){
 	
 	int status ;
@@ -498,7 +499,7 @@ void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr){
 		}
 		else{
 
-			char exe[MAX_LINE] ;
+			char exe[90] ;
 			strcpy(exe,tempPtr->progName);
 			
 
@@ -570,9 +571,9 @@ void sigtstpHandler(){ //When we press ^Z, this method will be invoked automatic
 
 
 //This is for parent part of creating new process 
-void parentPart(char *args[], int *background , pid_t childPid , ListProcessPtr *sPtr){
+void parentPart(char *args[], int *bg , pid_t childPid , ListProcessPtr *sPtr){
 
-	if(*background == 1){ //Background Process
+	if(*bg == 1){ //bg Process
 
 		waitpid(childPid, NULL, WNOHANG);
 		setpgid(childPid, childPid); // This will put that process into its process group
@@ -710,7 +711,7 @@ void childPart(char path[], char *args[]){
 }
 
 //This is for creating new child by using fork()
-void createProcess(char path[], char *args[],int *background,ListProcessPtr *sPtr){
+void createProcess(char path[], char *args[],int *bg,ListProcessPtr *sPtr){
 
 	pid_t childPid ;
 
@@ -719,7 +720,7 @@ void createProcess(char path[], char *args[],int *background,ListProcessPtr *sPt
 
 	if(childPid == -1){fprintf(stderr, "%s", "fork() function is failed!\n"); return;}
 	else if(childPid != 0){ // Parent Part
-		parentPart(args , &(*background),childPid , &(*sPtr));
+		parentPart(args , &(*bg),childPid , &(*sPtr));
 
 	}else{	//Child Part
 		childPart(path , args);
@@ -860,7 +861,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 			return;
 		}
 
-		char exe[MAX_LINE] = {""};
+		char exe[90] = {""};
 		for(t = 1; t < numOfArgs ; t++){
 			strcat(exe,args[t]);
 			strcat(exe," ");
@@ -1013,12 +1014,12 @@ void listFilesRecursively(char *basePath,char *pattern)
     closedir(dir);
 }
 
-//This function is for error check of search command
-int checkSearchArguments(char *args[]){
-
-	if(numOfArgs < 2){
+//This function is for "search" command
+void searchCommand(char *args[]){
+    bool valid=0;
+    if(numOfArgs < 2){
 		fprintf(stderr, "%s", "Please check your arguments!!\n");
-		return 1;
+		valid =1;
 
 	}else if(numOfArgs == 2){ //nonrecursive check
 
@@ -1029,7 +1030,7 @@ int checkSearchArguments(char *args[]){
 
 		if(!(pattern[0] == '"' && pattern[length - 1] == '"')){
 			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
-			return 1;
+			valid= 1;
 		}
 
 	}else if(numOfArgs == 3){ //recursive check
@@ -1040,26 +1041,16 @@ int checkSearchArguments(char *args[]){
 
 		if(!(pattern[0] == '"' && pattern[length - 1] == '"')){
 			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
-			return 1;
+			valid= 1;
 		}
 
 		if(strcmp(args[1],"-r") != 0){
 			fprintf(stderr, "%s", "Please check your arguments!!\n");
-			return 1;
+			valid= 1;
 		}
-
-	}else{
-		return 0;
 	}
 
-	return 0;
-}
-
-
-//This function is for "search" command
-void searchCommand(char *args[]){
-
-	if(checkSearchArguments(args) != 0) return;
+	if(valid) return;
 
 	int i=0; 
 	while(args[i] != NULL){
@@ -1259,9 +1250,9 @@ void formatInput(char *args[]){
  
 int main(void){
 	
-	char inputBuffer[MAX_LINE]; /*buffer to hold command entered */
-	int background; /* equals 1 if a command is followed by '&' */
-	char *args[MAX_LINE/2 + 1]; /*command line arguments */
+	char inputBuffer[90]; /*buffer to hold command entered */
+	int bg; /* equals 1 if a command is followed by '&' */
+	char *args[80]; /*command line arguments */
 	char path[PATH_MAX+1];
 	char *progpath;
 	char *exe;
@@ -1279,13 +1270,13 @@ int main(void){
 	HistoryPtr tailHistory = NULL ;
 
 	while (parentPid==getpid()){
-		background = 0;
+		bg = 0;
 		if(isEmpty(startPtr))		processNumber=1;
 		printf("myshell: ");
 		fflush(0);
 
 		/*setup() calls exit() when Control-D is entered */
-		setup(inputBuffer, args, &background);
+		setup(inputBuffer, args, &bg);
 
 
 		if(args[0] == NULL) continue; // If user just press "enter" , then continue without doing anything
@@ -1308,13 +1299,8 @@ int main(void){
 			if(isEmpty(startPtr) != 0){
 				exit(1);
 			}else{
-				fprintf(stderr, "%s", "There are processes running in the background!\n");			
+				fprintf(stderr, "%s", "There are processes running in the bg!\n");			
 			}
-			
-		}
-		else if(strcmp(args[0],"ps_all")==0){
-			printList(startPtr); //You need to press ps_all to see the content of list
-			deleteStoppedList(&startPtr);
 			
 		}
 		else if(strcmp(args[0],"search")==0){
@@ -1332,7 +1318,7 @@ int main(void){
 					/*If there is a program, then run it*/
 			if(*args[numOfArgs-1] == '&')// If last argument is &, delete it
 				args[numOfArgs-1] = '\0';						
-			createProcess(path,args,&background,&startPtr);
+			createProcess(path,args,&bg,&startPtr);
 		}
 		
 		 	path[0] = '\0';	
@@ -1340,7 +1326,5 @@ int main(void){
 			outputFileName[0] = '\0';
 			inputRedirectFlag = 0;
 			outputRedirectFlag = 0;
-	 }	  
-        
-	
+	 }	        
 }
