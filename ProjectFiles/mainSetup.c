@@ -62,7 +62,6 @@ void outputRedirect();
 void childPart(char path[], char *args[]);
 void createProcess(char path[], char *args[],int *background,ListProcessPtr *sPtr);
 int startsWith(const char *pre, const char *str);
-int endsWith(const char *pre, const char *suffix);
 int isInteger(char arg[]);
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void clearLine(char args[],char lineNumber[]);
@@ -550,18 +549,6 @@ int startsWith(const char *pre, const char *str)
     size_t lenpre = strlen(pre),
            lenstr = strlen(str);
     return lenstr < lenpre ? 0 : memcmp(pre, str, lenpre) == 0;
-}
-/*
-*	Return if parameter pre ends with suffix or not
-*/
-int endsWith(const char *pre, const char *suffix){
-    if (!pre || !suffix)
-        return 0;
-    size_t lenstr = strlen(pre);
-    size_t lensuffix = strlen(suffix);
-    if (lensuffix >  lenstr)
-        return 0;
-    return strncmp(pre + lenstr - lensuffix, suffix, lensuffix) == 0;
 }
 
 int isInteger(char arg[]){
