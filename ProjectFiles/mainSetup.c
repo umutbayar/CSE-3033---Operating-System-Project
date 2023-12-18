@@ -1,40 +1,23 @@
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <stdbool.h>
-
 #include <fcntl.h>
 #include <ctype.h>
 #include <limits.h>
 #include <libgen.h>
 #include <dirent.h> 
 #include <signal.h>
- 
-
-// File read flags
-#define READ_FLAGS (O_RDONLY)
-
-// File create flags
-#define CREATE_FLAGS (O_WRONLY | O_CREAT | O_TRUNC)
-
-// File append flags
-#define APPEND_FLAGS (O_WRONLY | O_CREAT | O_APPEND)
-
-// File read permissions
-#define READ_MODES (S_IRUSR | S_IRGRP | S_IROTH)
-
-// File create permissions
-#define CREATE_MODES (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 
 
 struct listProcess{
 	
-	int processNumber ;
+	double processNumber ;
 	pid_t pid ;	     // pid
 	char progName[50] ; // program name
 	struct listProcess *nextPtr ;
@@ -62,7 +45,7 @@ struct history
 typedef struct history History ;
 typedef History *HistoryPtr ;
 
-void setup(char inputBuffer[], char *args[],int *bg);
+void setup(char inputBuffer[], char *args[],int *background);
 int formatOutputSymbol(char *arg);
 int checkifexecutable(const char *filename);
 int findpathof(char *pth, const char *exe);
@@ -77,16 +60,15 @@ void deleteStoppedList(ListProcessPtr *currentPtr);
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
-void childSignalHandler(int signum);
+void childSignalHandler(double signum);
 void sigtstpHandler();
-void parentPart(char *args[], int *bg , pid_t childPid , ListProcessPtr *sPtr);
+void parentPart(char *args[], int *background , pid_t childPid , ListProcessPtr *sPtr);
 void inputRedirect();
 void outputRedirect();
 void childPart(char path[], char *args[]);
-void createProcess(char path[], char *args[],int *bg,ListProcessPtr *sPtr);
+void createProcess(char path[], char *args[],int *background,ListProcessPtr *sPtr);
 int startsWith(const char *pre, const char *str);
 int endsWith(const char *pre, const char *suffix);
-void printBookmarkUsage();
 int isInteger(char arg[]);
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void clearLine(char args[],char lineNumber[]);
@@ -102,11 +84,11 @@ char inputFileName[20];
 char outputFileName[20];
 char outputRedirectSymbol[3] = {"00"};
 
-int inputRedirectFlag;
-int outputRedirectFlag;
+double inputRedirectFlag;
+double outputRedirectFlag;
 
 int numOfArgs = 0; //
-int processNumber = 1 ; //
+double processNumber = 1 ; //
 
 pid_t parentPid ; // stores the parent pid
 pid_t fgProcessPid = 0;
@@ -123,7 +105,7 @@ delimiters), and set the args array entries to point to the beginning of what
 will become null-terminated, C-style strings. */
 
 
-void setup(char inputBuffer[], char *args[],int *bg)
+void setup(char inputBuffer[], char *args[],int *background)
 {
     int length, /* # of characters in the command line */
         i,      /* loop index for accessing inputBuffer array */
@@ -180,7 +162,7 @@ void setup(char inputBuffer[], char *args[],int *bg)
 		if (start == -1)
 		    start = i;
                 if (inputBuffer[i] == '&'){
-		    *bg  = 1;
+		    *background  = 1;
                     inputBuffer[i-1] = '\0';
 		}
 	} /* end of switch */
@@ -189,16 +171,6 @@ void setup(char inputBuffer[], char *args[],int *bg)
 	numOfArgs = ct;
 
 } /* end of setup routine */
- 
-
-// next 2 functions is looking PATH and find executable input  
-
-/* int checkifexecutable(const char *filename)
- * 
- * Return non-zero if the name is an executable file, and
- * zero if it is not executable, or if it does not exist.
- */
-
 
 //This function takes the output symbol and turn it to integer value
 int formatOutputSymbol(char *arg)
@@ -210,17 +182,14 @@ int formatOutputSymbol(char *arg)
 		return 1;
 	else if(strcmp(arg, "2>") == 0)
 		return 2;
-	else if(strcmp(arg, "2>>") == 0)
-		return 3;
 
 	return -1;
-
 }
 
 //This function takes a program name and check it if it is executable or not.
 int checkifexecutable(const char *filename)
 {
-     int result;
+     double result;
      struct stat statinfo;
      
      result = stat(filename, &statinfo);
@@ -236,7 +205,7 @@ int findpathof(char *pth, const char *exe)
 {
      char *searchpath;
      char *beg, *end;
-     int stop, found;
+     double stop, found;
      int len;
 
      if (strchr(exe, '/') != NULL) {
@@ -270,9 +239,7 @@ int findpathof(char *pth, const char *exe)
      return found;
 }
 
-
-
-//This is insert function for bg process
+//This is insert function for background process
 void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]){
 	
 	ListProcessPtr newPtr = malloc(sizeof(ListProcess)); // Create Node
@@ -302,19 +269,16 @@ void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]){
 	}
 	else{
 		fprintf(stderr, "%s", "No memory available\n");
-	}
-		
+	}	
 }
 
 // inserting program into bookmark struct
 void insertBookmark(bookmarkPtr *bPtr , char progName[]){
-
 	bookmarkPtr newPtr = malloc(sizeof(bookmarks));
 
 	if(newPtr != NULL){
 		strcpy(newPtr->progName, progName);
 		newPtr->nextPtr = NULL;
-
 		bookmarkPtr previousPtr = NULL ;
 		bookmarkPtr currentPtr = *bPtr ;
 
@@ -331,12 +295,10 @@ void insertBookmark(bookmarkPtr *bPtr , char progName[]){
 			newPtr->nextPtr = currentPtr;
 			
 		}		
-
 	}
 	else{
 		fprintf(stderr, "%s", "No memory available\n");
 	}
-
 }
 
 void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]){
@@ -364,10 +326,7 @@ void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]){
 	}else{											//			   --prev------------------->
 		fprintf(stderr, "%s", "No memory available\n");
 	}
-
-
 }
-
 
 //This function is for printing the content of bookmark list
 void printListBookmark(bookmarkPtr bPtr){
@@ -383,33 +342,27 @@ void printListBookmark(bookmarkPtr bPtr){
 		}
 		printf("%d %s\n",i,tempPtr->progName);
 	}
-
 }
 
 void printHistory(HistoryPtr hPtr){
 
 	int i=0 ;
-
 	HistoryPtr temp = hPtr ;
 		while(temp->nextPtr != NULL && i!=3){
 			printf("%d -> %s , next-> %s , prev-> %s\n",i,temp->inputArgs,temp->nextPtr->inputArgs,temp->previousPtr->inputArgs);
 			temp = temp->nextPtr ;
 			i++;
 		}	
-
 }
 
-//This function is for deleting dead processes from bg processes list
+//This function is for deleting dead processes from background processes list
 void deleteStoppedList(ListProcessPtr *currentPtr){
-	
-	int status ;
-	
+	double status ;
 	if((*currentPtr)==NULL)
 		return ;
 		
 	if(waitpid((*currentPtr)->pid,&status,WNOHANG)==-1){
 		// if the stopped process is the first 
-	
 		ListProcessPtr tempPtr = *currentPtr ;
 		*currentPtr = (*currentPtr)->nextPtr ;
 		free(tempPtr) ;
@@ -430,16 +383,14 @@ void deleteStoppedList(ListProcessPtr *currentPtr){
 			previousPtr->nextPtr=tempPtr->nextPtr;
 			free(delPtr);
 			deleteStoppedList(currentPtr);
-		}
-			
-	}
-	
+		}		
+	}	
 }
 
 //This function is for deleting items from bookmark list
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 
-	int index = atoi(charindex);
+	double index = atoi(charindex);
 
 	if(isEmptyBookmark(*currentPtr))
 		fprintf(stderr, "%s", "List is empty\n");
@@ -454,7 +405,7 @@ void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 		else{	// delete others
 			bookmarkPtr previousPtr = *currentPtr ;
 			bookmarkPtr tempPtr = (*currentPtr)->nextPtr ;
-			int temp = 1;
+			double temp = 1;
 
 			while(temp!=index && tempPtr!=NULL){
 				previousPtr = tempPtr ;
@@ -470,25 +421,21 @@ void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 				free(delPtr);
 
 			}
-
 		}
-
 	}
-
 }
 
 //This function is for running the corresponding index from bookmark list.
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr){
 
-	int index = atoi(charindex);
+	double index = atoi(charindex);
 	char *progpath ;
 
 	if(isEmptyBookmark(currentPtr))
 		fprintf(stderr, "%s", "List is empty\n");
 	else{
-
 		bookmarkPtr tempPtr = currentPtr;
-		int j=0 ;
+		double j=0 ;
 		while(tempPtr!=NULL && j!=index){
 			tempPtr=tempPtr->nextPtr;
 			j++;
@@ -501,23 +448,18 @@ void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr){
 
 			char exe[90] ;
 			strcpy(exe,tempPtr->progName);
-			
-
 			int length = strlen(exe);
 			int i = 0;
 			exe[length - 2] = '\0';
 			for(i = 0 ; i < length; i++){
 				exe[i] = exe[i+1];
 			}
-
 			char command[100];
 			sprintf(command, "%s",exe);
 			system(command);
 
 		}
-
 	}
-
 }
 
 //This function is for killing all the sub childs of our foreground process
@@ -542,14 +484,11 @@ int killAllChildProcess(pid_t ppid)
 }
 
 //This function is called when the child is created
-void childSignalHandler(int signum) {
-	int status;
+void childSignalHandler(double signum) {
+	double status;
 	pid_t pid;
-	
-	
 	pid = waitpid(-1, &status, WNOHANG);
 }
-
 
 void sigtstpHandler(){ //When we press ^Z, this method will be invoked automatically
 
@@ -559,21 +498,17 @@ void sigtstpHandler(){ //When we press ^Z, this method will be invoked automatic
 		return;
 	}
 
-
 	killAllChildProcess(fgProcessPid);
-
 	char cmd[256] = {0};
 	sprintf(cmd,"kill -TSTP %d",fgProcessPid); //This is for stopping process
 	system(cmd);
-
 	fgProcessPid = 0;
 }
 
-
 //This is for parent part of creating new process 
-void parentPart(char *args[], int *bg , pid_t childPid , ListProcessPtr *sPtr){
+void parentPart(char *args[], int *background , pid_t childPid , ListProcessPtr *sPtr){
 
-	if(*bg == 1){ //bg Process
+	if(*background == 1){ //background Process
 
 		waitpid(childPid, NULL, WNOHANG);
 		setpgid(childPid, childPid); // This will put that process into its process group
@@ -587,25 +522,21 @@ void parentPart(char *args[], int *bg , pid_t childPid , ListProcessPtr *sPtr){
 
 		 if(childPid != waitpid(childPid, NULL, WUNTRACED))
        		fprintf(stderr, "%s", "Parent failed while waiting the child due to a signal or error!!!\n");
-
 	}
-
 }
 
 //This is for input redirection . 
 void inputRedirect(){
 
-	int fdInput;
+	double fdInput;
 
 	if(inputRedirectFlag == 1){///This is for getting input from file
-		fdInput = open(inputFileName, READ_FLAGS, READ_MODES);
-
+	  fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		if(fdInput == -1){
 	        fprintf(stderr, "%s", "Failed to open the file given as input...\n");
 
 	        return;
 	    }
-
 	    if(dup2(fdInput, STDIN_FILENO) == -1){
 	        fprintf(stderr, "%s", "Failed to redirect standard input...\n");
 	        return;
@@ -615,23 +546,20 @@ void inputRedirect(){
 	        fprintf(stderr, "%s", "Failed to close the input file...\n");
 	        return;
 	    }
-
 	}
-
 }
 
 //This is for output redirection 
 void outputRedirect(){
 
-	int fdOutput;
+	double fdOutput;
 
 			// > is 0 | >> is 1 | 2> is 2 | 2>> is 3
-		int outputMode = formatOutputSymbol(outputRedirectSymbol);
+		double outputMode = formatOutputSymbol(outputRedirectSymbol);
 
 		if(outputMode == 0){ // For > part
 
-			fdOutput = open(outputFileName, CREATE_FLAGS, CREATE_MODES);
-
+		fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	        if(fdOutput == -1){ 
          	    fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
          	   return;
@@ -646,81 +574,53 @@ void outputRedirect(){
 		}
 		else if(outputMode == 1){ // for >> part
 
-			fdOutput = open(outputFileName, APPEND_FLAGS, CREATE_MODES);
-
+		  fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	        if(fdOutput == -1){ ///
          	   fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
          	   return;
         	}
 
-
         	if(dup2(fdOutput, STDOUT_FILENO) == -1){
 				fprintf(stderr, "%s", "Failed to redirect standard output...\n");
 				return;
 			}
-
 		}
 		else if(outputMode == 2){	// for 2> part
-			fdOutput = open(outputFileName, CREATE_FLAGS, CREATE_MODES);
-			if(fdOutput == -1){
+		  fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);		
+		  	if(fdOutput == -1){
 				fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
 				return;
      	   }
-
-     	   if(dup2(fdOutput, STDERR_FILENO) == -1){
-				fprintf(stderr, "%s", "Failed to redirect standard error...\n");
-				return;
-			}
-
-		}
-		else if(outputMode == 3){ // for 2>> part
-
-			fdOutput = open(outputFileName,APPEND_FLAGS, CREATE_MODES);
-
-			if(fdOutput == -1){
-				fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
-				return;
-     	   }
-
      	   if(dup2(fdOutput, STDERR_FILENO) == -1){
 				fprintf(stderr, "%s", "Failed to redirect standard error...\n");
 				return;
 			}
 		}
-
 }
 
 //This is for child
 void childPart(char path[], char *args[]){
-
-
 	if(inputRedirectFlag == 1){ //This is for myshell: myprog [args] < file.in
 		inputRedirect();
 
 		if(outputRedirectFlag == 1){ // This is for myprog [args] < file.in > file.out
 			outputRedirect();
 		}
-
 	}else if(outputRedirectFlag == 1){ // This is for myprog [args] > file.out and myshell: myprog [args] >> file.out and myshell: myprog [args] 2> file.out
 		outputRedirect();
 	}
-
 	execv(path,args);
-
-
 }
 
 //This is for creating new child by using fork()
-void createProcess(char path[], char *args[],int *bg,ListProcessPtr *sPtr){
+void createProcess(char path[], char *args[],int *background,ListProcessPtr *sPtr){
 
 	pid_t childPid ;
 
 	childPid = fork();
-
-
 	if(childPid == -1){fprintf(stderr, "%s", "fork() function is failed!\n"); return;}
 	else if(childPid != 0){ // Parent Part
-		parentPart(args , &(*bg),childPid , &(*sPtr));
+		parentPart(args , &(*background),childPid , &(*sPtr));
 
 	}else{	//Child Part
 		childPart(path , args);
@@ -736,10 +636,7 @@ int startsWith(const char *pre, const char *str)
     size_t lenpre = strlen(pre),
            lenstr = strlen(str);
     return lenstr < lenpre ? 0 : memcmp(pre, str, lenpre) == 0;
-
 }
-
-
 /*
 *	Return if parameter pre ends with suffix or not
 */
@@ -751,12 +648,6 @@ int endsWith(const char *pre, const char *suffix){
     if (lensuffix >  lenstr)
         return 0;
     return strncmp(pre + lenstr - lensuffix, suffix, lensuffix) == 0;
-
-}
-
-//This is for printing usage of bookmark
-void printBookmarkUsage(){
-	printf("*Bookmark Usage : \n->\"bookmark -l\" to see the bookmark list.\n->\"bookmark -i (index)\" to run the bookmark index.\n->\"bookmark -d (index)\" to delete the item from bookmark.\n");
 }
 
 int isInteger(char arg[]){
@@ -766,7 +657,6 @@ int isInteger(char arg[]){
         if (!isdigit(arg[i]))
         {
             fprintf(stderr, "%s", "Please check your arguments !\n");
-            printBookmarkUsage();
             return 1;
         }
 	return 0;
@@ -786,7 +676,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 		return;
 	}
 	else if((strcmp(args[1],"-h")==0) && i==2){ 
-		printBookmarkUsage();
+		printf("try again");
 		return;
 	}		
 	else if((strcmp(args[1],"-l")==0) && i==2){
@@ -813,7 +703,6 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 		else{
 			return;
 		}
-
 	}
 	else if(startsWith("\"",args[1])){
 
@@ -823,12 +712,11 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 		strcpy(command,args[numOfArgs-1]);
 
 		if(command[length -1] != '\"'){
-			fprintf(stderr, "%s", "Wrong usage of Bookmark! You can type \"bookmark -h\" to see the correct usage.\n");
+			fprintf(stderr, "%s", "Wrong usage of Bookmark! ");
 			return;
 		}
 
 		//This part is for checking the command. If it is not an executable, then just return.
-
 		char *exec;
 		char path[PATH_MAX+1];
 		char firstArgument[50];
@@ -853,7 +741,6 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 			firstArgument[lengthOfFirstArgument-1] = '\0';
 
 		}
-
 		exec = firstArgument;
 
 		if(!findpathof(path,exec)){ // If command which is want to be stored is not existing before, then just return
@@ -868,15 +755,13 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 		}
 		insertBookmark(startPtrBookmark,exe);
 		exe[0] = '\0';
-
 	}
 	else{
-		fprintf(stderr, "%s", "Wrong usage of Bookmark! You can type \"bookmark -h\" to see the correct usage.\n");
+		fprintf(stderr, "%s", "Wrong usage of Bookmark! ");
 		return;
 	}
 
 }
-
 //This is for fixing line and getting the line number.
 void clearLine(char args[],char lineNumber[]){
 	int i = 0;
@@ -895,7 +780,6 @@ void clearLine(char args[],char lineNumber[]){
 	for(i = 0; i < length; i++){
 		args[i] = args[digitNum + i];
 	}
-
 }
 
 /**
@@ -957,12 +841,7 @@ void printSearchCommand(char *fileName , char *pattern){
 
 	free(buff2);
 	fclose(fp2);
-
-
-
 }
-
-
 /**
  * Lists all files and sub-directories recursively 
  * considering path as base path.
@@ -977,7 +856,6 @@ void listFilesRecursively(char *basePath,char *pattern)
     // Unable to open directory stream
     if (!dir)
         return;
-  
 
     while ((dp = readdir(dir)) != NULL)
     {
@@ -987,8 +865,6 @@ void listFilesRecursively(char *basePath,char *pattern)
         	char fName[50];
           
        	   strcpy(fName,dp->d_name);
-
-
        	   char grepFile[1000];
        	   strcpy(grepFile , basePath);
        	   strcat(grepFile , "/");
@@ -996,17 +872,12 @@ void listFilesRecursively(char *basePath,char *pattern)
 
        	   if(fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
        	   		 fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H')){
-
-
        	   	printSearchCommand(grepFile , pattern);
-
        	   }
-
             // Construct new path from our base path
             strcpy(path, basePath);
             strcat(path, "/");
             strcat(path, dp->d_name);
-
             listFilesRecursively(path,pattern);
         }
     }
@@ -1051,7 +922,6 @@ void searchCommand(char *args[]){
 	}
 
 	if(valid) return;
-
 	int i=0; 
 	while(args[i] != NULL){
 		i++;
@@ -1063,8 +933,6 @@ void searchCommand(char *args[]){
 
 		// without -r option 
 		// it will look all the files which ends .c .C .h .H under current directory and find the 'command' input word in this files
-
-
 	    struct dirent *de;  // Pointer for directory entry 
 	  
 	    // opendir() returns a pointer of DIR type.  
@@ -1094,14 +962,11 @@ void searchCommand(char *args[]){
 
 	    			printSearchCommand(de->d_name,args[1]);
 	    		}
-
 	    	}
-
 	    }
 	            
 	  	printf("\n");
 	    closedir(dr);     
- 
 
 	}
 	else if(i==3 && strcmp(args[1],"-r")==0){ // recursive part 
@@ -1113,32 +978,26 @@ void searchCommand(char *args[]){
 		}
 		else {
 		    fprintf(stderr, "%s", "getcwd() error\n"); 
-
 		}
 
 	}
-
 	else{
 		fprintf(stderr, "%s", "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"); 
 
 	}
 
 }
-
 //This function is for printing the usage of redirection 
 void printUsageOfIO(){
 	printf("[1] -> \"myprog [args] > file.out\"\n");
 	printf("[2] -> \"myprog [args] >> file.out\"\n");
 	printf("[3] -> \"myprog [args] < file.in\"\n");
 	printf("[4] -> \"myprog [args] 2> file.out\"\n");
-	printf("[5] -> \"myprog [args] < file.in > file.out\"\n");
 }
 
 //If input includes IO operation, then this method will return 0. Otherwise 1
 //Contents of inputFileName and outputFileName also set in here 
 int checkIORedirection(char *args[]){
-
-
 	//Error handlings
 	if(numOfArgs == 2 && strcmp(args[0], "io") == 0  && strcmp(args[1], "-h") == 0){
 		printUsageOfIO();
@@ -1158,10 +1017,8 @@ int checkIORedirection(char *args[]){
 			fprintf(stderr, "I/O redirection is not valid for \" %s \" command!!\n",args[0]);
 			return 1;
 		}
-
-
-
-	}else{
+	}
+	else{
 		return 0;
 	}
 
@@ -1209,16 +1066,10 @@ int checkIORedirection(char *args[]){
             strcpy(inputFileName , args[i+1]);
 
             return 0;
-
 		}
-
 	}	
-
-
 }
-
-
-//This method clears the input from < > 2> 2>> >> . 
+ 
 void formatInput(char *args[]){
 
 	int i = 0;
@@ -1226,7 +1077,7 @@ void formatInput(char *args[]){
 	int counter;
 	int flag = 0;
 	for(i = 0; i < numOfArgs; i++){
-		if(strcmp(args[i],"<")== 0 || strcmp(args[i],">")== 0 || strcmp(args[i],">>")== 0 || strcmp(args[i],"2>")== 0 || strcmp(args[i],"2>>")== 0){
+		if(strcmp(args[i],"<")== 0 || strcmp(args[i],">")== 0 || strcmp(args[i],">>")== 0 || strcmp(args[i],"2>")== 0){
 			args[i] = NULL;
 			a = i;
 			counter = i+1;
@@ -1235,23 +1086,18 @@ void formatInput(char *args[]){
 		}
 	}
 
-	if(flag == 0) return; //Eger komutun io ile ilgisi yoksa direkt return
+	if(flag == 0) return; 
 	
-
 	for(i = counter; i < numOfArgs; i++){ 
 		args[i] = NULL;
 	}
-
 	numOfArgs = numOfArgs - (numOfArgs-a); // Update number of arguments
-
-
 }
 
- 
 int main(void){
 	
 	char inputBuffer[90]; /*buffer to hold command entered */
-	int bg; /* equals 1 if a command is followed by '&' */
+	int background; /* equals 1 if a command is followed by '&' */
 	char *args[80]; /*command line arguments */
 	char path[PATH_MAX+1];
 	char *progpath;
@@ -1270,28 +1116,22 @@ int main(void){
 	HistoryPtr tailHistory = NULL ;
 
 	while (parentPid==getpid()){
-		bg = 0;
+		background = 0;
 		if(isEmpty(startPtr))		processNumber=1;
 		printf("myshell: ");
 		fflush(0);
 
 		/*setup() calls exit() when Control-D is entered */
-		setup(inputBuffer, args, &bg);
+		setup(inputBuffer, args, &background);
 
 
 		if(args[0] == NULL) continue; // If user just press "enter" , then continue without doing anything
-
-		//insertHistory(&headHistory,&tailHistory,*args);	
-		//printHistory(headHistory);
 		progpath = strdup(args[0]);
 		exe=args[0];
 
-		if(checkIORedirection(args) != 0){ //// Eger ıo yazımında vs hata varsa error verip yeniden input almalı			
+		if(checkIORedirection(args) != 0){ // Eger ıo yazımında vs hata varsa error verip yeniden input almalı			
 			continue;
 		}
-	
-
-
 		formatInput(args);
 
 		if(strcmp(args[0],"exit")==0) {
@@ -1299,7 +1139,7 @@ int main(void){
 			if(isEmpty(startPtr) != 0){
 				exit(1);
 			}else{
-				fprintf(stderr, "%s", "There are processes running in the bg!\n");			
+				fprintf(stderr, "%s", "There are processes running in the background!\n");			
 			}
 			
 		}
@@ -1318,9 +1158,8 @@ int main(void){
 					/*If there is a program, then run it*/
 			if(*args[numOfArgs-1] == '&')// If last argument is &, delete it
 				args[numOfArgs-1] = '\0';						
-			createProcess(path,args,&bg,&startPtr);
+			createProcess(path,args,&background,&startPtr);
 		}
-		
 		 	path[0] = '\0';	
 			inputFileName[0] = '\0';
 			outputFileName[0] = '\0';
