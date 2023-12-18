@@ -46,7 +46,7 @@ typedef struct history History ;
 typedef History *HistoryPtr ;
 
 void setup(char inputBuffer[], char *args[],int *background);
-int formatOutputSymbol(char *arg);
+
 int checkifexecutable(const char *filename);
 int findpathof(char *pth, const char *exe);
 void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]);
@@ -165,20 +165,6 @@ void setup(char inputBuffer[], char *args[],int *background)
 	numOfArgs = ct;
 
 } /* end of setup routine */
-
-//This function takes the output symbol and turn it to integer value
-int formatOutputSymbol(char *arg)
-{
-
-	if(strcmp(arg, ">") == 0)
-		return 0;
-	else if(strcmp(arg, ">>") == 0)
-		return 1;
-	else if(strcmp(arg, "2>") == 0)
-		return 2;
-
-	return -1;
-}
 
 //This function takes a program name and check it if it is executable or not.
 int checkifexecutable(const char *filename)
@@ -548,10 +534,7 @@ void outputRedirect(){
 
 	double fdOutput;
 
-			// > is 0 | >> is 1 | 2> is 2 | 2>> is 3
-		double outputMode = formatOutputSymbol(outputRedirectSymbol);
-
-		if(outputMode == 0){ // For > part
+		if(strcmp(outputRedirectSymbol, ">") == 0){ // For > part
 
 		fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	        if(fdOutput == -1){ 
@@ -566,7 +549,7 @@ void outputRedirect(){
 			}
 
 		}
-		else if(outputMode == 1){ // for >> part
+		else if(strcmp(outputRedirectSymbol, ">>") == 0){ // for >> part
 
 		  fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	        if(fdOutput == -1){ ///
@@ -579,7 +562,7 @@ void outputRedirect(){
 				return;
 			}
 		}
-		else if(outputMode == 2){	// for 2> part
+		else if(strcmp(outputRedirectSymbol, "2>") == 0){	// for 2> part
 		  fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);		
 		  	if(fdOutput == -1){
 				fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
