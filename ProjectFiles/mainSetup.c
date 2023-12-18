@@ -46,16 +46,10 @@ typedef struct history History ;
 typedef History *HistoryPtr ;
 
 void setup(char inputBuffer[], char *args[],int *background);
-
 int checkifexecutable(const char *filename);
 int findpathof(char *pth, const char *exe);
 void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]);
 void insertBookmark(bookmarkPtr *bPtr , char progName[]);
-void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]);
-
-
-
-
 void deleteStoppedList(ListProcessPtr *currentPtr);
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
@@ -75,7 +69,6 @@ void clearLine(char args[],char lineNumber[]);
 void printSearchCommand(char *fileName , char *pattern);
 void listFilesRecursively(char *basePath,char *pattern);
 void searchCommand(char *args[]);
-
 int checkIORedirection(char *args[]);
 void formatInput(char *args[]);
 int main(void);
@@ -97,8 +90,6 @@ pid_t fgProcessPid = 0;
 in the next command line; separate it into distinct arguments (using blanks as
 delimiters), and set the args array entries to point to the beginning of what
 will become null-terminated, C-style strings. */
-
-
 void setup(char inputBuffer[], char *args[],int *background)
 {
     int length, /* # of characters in the command line */
@@ -277,33 +268,6 @@ void insertBookmark(bookmarkPtr *bPtr , char progName[]){
 		}		
 	}
 	else{
-		fprintf(stderr, "%s", "No memory available\n");
-	}
-}
-
-void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]){
-
-	HistoryPtr newPtr = malloc(sizeof(History)); //create node
-
-	if(newPtr != NULL){
-
-		if(*tail == NULL && *head == NULL){
-			strcpy(newPtr->inputArgs,inputArgs);
-			newPtr->previousPtr = newPtr ;			// when there is one history , nextPtr is itself and previousPtr is itself too
-			newPtr->nextPtr = newPtr ;
-			*head = newPtr ;							// head and tail is itself too
-			*tail = newPtr ;
-		}
-		else{										// when there is two history
-			strcpy(newPtr->inputArgs,inputArgs);
-			newPtr->nextPtr=(*head) ;					// newPtr's nextPtr is last headPtr and headPtr will be newPtr .
-			newPtr->previousPtr=(*tail) ;				// newPtr's previousPtr is always tail and tail will not change
-			(*head)->previousPtr=newPtr ;				// head's previousPtr will newPtr and head will be newPtr after this   
-			(*head) = newPtr ;						//-->ex		  <--------------------next---	
-			(*tail)->nextPtr = newPtr ;				//             next---->     next---->    |
-													//		*firefox*		 *gedit*		 *ls*
-		}											//			  |	<-----prev    <-----prev
-	}else{											//			   --prev------------------->
 		fprintf(stderr, "%s", "No memory available\n");
 	}
 }
