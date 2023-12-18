@@ -54,7 +54,6 @@ void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
 void sigtstpHandler();
-void parentPart(char *args[], int *background, pid_t childPid, ListProcessPtr *sPtr);
 void inputRedirect();
 void outputRedirect();
 void childPart(char path[], char *args[]);
@@ -483,29 +482,6 @@ void sigtstpHandler()
 	fgProcessPid = 0;
 }
 
-// This is for parent part of creating new process
-void parentPart(char *args[], int *background, pid_t childPid, ListProcessPtr *sPtr)
-{
-
-	if (*background == 1)
-	{ // background Process
-
-		waitpid(childPid, NULL, WNOHANG);
-		setpgid(childPid, childPid); // This will put that process into its process group
-		insert(&(*sPtr), childPid, args[0]);
-		processNumber++;
-	}
-	else
-	{ // Foreground Process
-
-		setpgid(childPid, childPid); // This will put that process into its process group
-		fgProcessPid = childPid;
-
-		if (childPid != waitpid(childPid, NULL, WUNTRACED))
-			fprintf(stderr, "%s", "Parent failed while waiting the child due to a signal or error!!!\n");
-	}
-}
-
 // This is for input redirection .
 void inputRedirect()
 {
@@ -622,7 +598,20 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	}
 	else if (childPid != 0)
 	{ // Parent Part
-		parentPart(args, &(*background), childPid, &(*sPtr));
+		if (*background == 1)
+		{ // background Process
+			waitpid(childPid, NULL, WNOHANG);
+			setpgid(childPid, childPid); // This will put that process into its process group
+			insert(&(*sPtr), childPid, args[0]);
+			processNumber++;
+		}
+		else
+		{								 // Foreground Process
+			setpgid(childPid, childPid); // This will put that process into its process group
+			fgProcessPid = childPid;
+			if (childPid != waitpid(childPid, NULL, WUNTRACED))
+				fprintf(stderr, "%s", "Parent failed while waiting the child due to a signal or error!!!\n");
+		}
 	}
 	else
 	{ // Child Part
