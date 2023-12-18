@@ -17,7 +17,7 @@
 
 struct listProcess{
 	
-	double processNumber ;
+	long processNumber ;
 	pid_t pid ;	     // pid
 	char progName[50] ; // program name
 	struct listProcess *nextPtr ;
@@ -84,11 +84,11 @@ char inputFileName[20];
 char outputFileName[20];
 char outputRedirectSymbol[3] = {"00"};
 
-double inputRedirectFlag;
-double outputRedirectFlag;
+long inputRedirectFlag;
+long outputRedirectFlag;
 
 int numOfArgs = 0; //
-double processNumber = 1 ; //
+long processNumber = 1 ; //
 
 pid_t parentPid ; // stores the parent pid
 pid_t fgProcessPid = 0;
@@ -169,7 +169,7 @@ void setup(char inputBuffer[], char *args[],int *background)
 //This function takes a program name and check it if it is executable or not.
 int checkifexecutable(const char *filename)
 {
-     double result;
+     long result;
      struct stat statinfo;
      
      result = stat(filename, &statinfo);
@@ -185,7 +185,7 @@ int findpathof(char *pth, const char *exe)
 {
      char *searchpath;
      char *beg, *end;
-     double stop, found;
+     long stop, found;
      int len;
 
      if (strchr(exe, '/') != NULL) {
@@ -343,7 +343,7 @@ void deleteStoppedList(ListProcessPtr *currentPtr){
 //This function is for deleting items from bookmark list
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 
-	double index = atoi(charindex);
+	long index = atoi(charindex);
 
 	if(*currentPtr == NULL)
 		fprintf(stderr, "%s", "List is empty\n");
@@ -358,7 +358,7 @@ void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 		else{	// delete others
 			bookmarkPtr previousPtr = *currentPtr ;
 			bookmarkPtr tempPtr = (*currentPtr)->nextPtr ;
-			double temp = 1;
+			long temp = 1;
 
 			while(temp!=index && tempPtr!=NULL){
 				previousPtr = tempPtr ;
@@ -381,14 +381,14 @@ void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 //This function is for running the corresponding index from bookmark list.
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr){
 
-	double index = atoi(charindex);
+	long index = atoi(charindex);
 	char *progpath ;
 
 	if(currentPtr == NULL)
 		fprintf(stderr, "%s", "List is empty\n");
 	else{
 		bookmarkPtr tempPtr = currentPtr;
-		double j=0 ;
+		long j=0 ;
 		while(tempPtr!=NULL && j!=index){
 			tempPtr=tempPtr->nextPtr;
 			j++;
@@ -481,7 +481,7 @@ void parentPart(char *args[], int *background , pid_t childPid , ListProcessPtr 
 //This is for input redirection . 
 void inputRedirect(){
 
-	double fdInput;
+	long fdInput;
 
 	if(inputRedirectFlag == 1){///This is for getting input from file
 	  fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -505,7 +505,7 @@ void inputRedirect(){
 //This is for output redirection 
 void outputRedirect(){
 
-	double fdOutput;
+	long fdOutput;
 
 		if(strcmp(outputRedirectSymbol, ">") == 0){ // For > part
 
