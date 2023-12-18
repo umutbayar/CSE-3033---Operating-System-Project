@@ -60,7 +60,7 @@ void deleteStoppedList(ListProcessPtr *currentPtr);
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
-void childSignalHandler(double signum);
+void childSignalHandler(int signum);
 void sigtstpHandler();
 void parentPart(char *args[], int *background , pid_t childPid , ListProcessPtr *sPtr);
 void inputRedirect();
@@ -357,7 +357,7 @@ void printHistory(HistoryPtr hPtr){
 
 //This function is for deleting dead processes from background processes list
 void deleteStoppedList(ListProcessPtr *currentPtr){
-	double status ;
+	int status ;
 	if((*currentPtr)==NULL)
 		return ;
 		
@@ -484,8 +484,8 @@ int killAllChildProcess(pid_t ppid)
 }
 
 //This function is called when the child is created
-void childSignalHandler(double signum) {
-	double status;
+void childSignalHandler(int signum) {
+	int status;
 	pid_t pid;
 	pid = waitpid(-1, &status, WNOHANG);
 }
