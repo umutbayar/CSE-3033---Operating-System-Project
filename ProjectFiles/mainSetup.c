@@ -178,11 +178,12 @@ int findpathof(char *pth, const char *exe)
 			long result;
 			struct stat statinfo;
 
-			result = stat(filename, &statinfo);
+			result = stat(pth, &statinfo);
 			if (result < 0)
 				return 0;
 			if (!S_ISREG(statinfo.st_mode))
 				return 0;
+
 			if (statinfo.st_uid == geteuid())
 				return statinfo.st_mode & S_IXUSR;
 			if (statinfo.st_gid == getegid())
@@ -222,7 +223,7 @@ int findpathof(char *pth, const char *exe)
 		long result;
 		struct stat statinfo;
 
-		result = stat(filename, &statinfo);
+		result = stat(pth, &statinfo);
 		if (result < 0)
 			found = 0;
 		if (!S_ISREG(statinfo.st_mode))
