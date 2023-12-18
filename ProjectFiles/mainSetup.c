@@ -75,7 +75,7 @@ void clearLine(char args[],char lineNumber[]);
 void printSearchCommand(char *fileName , char *pattern);
 void listFilesRecursively(char *basePath,char *pattern);
 void searchCommand(char *args[]);
-void printUsageOfIO();
+
 int checkIORedirection(char *args[]);
 void formatInput(char *args[]);
 int main(void);
@@ -947,20 +947,16 @@ void searchCommand(char *args[]){
 	}
 
 }
-//This function is for printing the usage of redirection 
-void printUsageOfIO(){
-	printf("[1] -> \"myprog [args] > file.out\"\n");
-	printf("[2] -> \"myprog [args] >> file.out\"\n");
-	printf("[3] -> \"myprog [args] < file.in\"\n");
-	printf("[4] -> \"myprog [args] 2> file.out\"\n");
-}
 
 //If input includes IO operation, then this method will return 0. Otherwise 1
 //Contents of inputFileName and outputFileName also set in here 
 int checkIORedirection(char *args[]){
 	//Error handlings
 	if(numOfArgs == 2 && strcmp(args[0], "io") == 0  && strcmp(args[1], "-h") == 0){
-		printUsageOfIO();
+		printf("[1] -> \"myprog [args] > file.out\"\n");
+		printf("[2] -> \"myprog [args] >> file.out\"\n");
+		printf("[3] -> \"myprog [args] < file.in\"\n");
+		printf("[4] -> \"myprog [args] 2> file.out\"\n");
 		return 1;
 	}
 
