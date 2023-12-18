@@ -23,8 +23,7 @@ struct listProcess{
 	struct listProcess *nextPtr ;
 	
 };
-typedef struct listProcess ListProcess ; 
-typedef ListProcess *ListProcessPtr;
+typedef struct listProcess *ListProcessPtr ; 
 
 //This struct is for bookmark commands
 struct bookmark{
@@ -33,8 +32,7 @@ struct bookmark{
 	struct bookmark *nextPtr ;
 
 };
-typedef struct bookmark bookmarks ; 
-typedef bookmarks *bookmarkPtr ; 
+typedef struct bookmark *bookmarkPtr ; 
 
 struct history
 {
@@ -42,20 +40,14 @@ struct history
 	struct history *previousPtr ;
 	struct history *nextPtr ;
 };
-typedef struct history History ;
-typedef History *HistoryPtr ;
+typedef struct history *HistoryPtr ;
 
 void setup(char inputBuffer[], char *args[],int *background);
-
 int checkifexecutable(const char *filename);
 int findpathof(char *pth, const char *exe);
 void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]);
 void insertBookmark(bookmarkPtr *bPtr , char progName[]);
 void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]);
-
-
-
-
 void deleteStoppedList(ListProcessPtr *currentPtr);
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
@@ -75,7 +67,6 @@ void clearLine(char args[],char lineNumber[]);
 void printSearchCommand(char *fileName , char *pattern);
 void listFilesRecursively(char *basePath,char *pattern);
 void searchCommand(char *args[]);
-
 int checkIORedirection(char *args[]);
 void formatInput(char *args[]);
 int main(void);
