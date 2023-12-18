@@ -15,7 +15,7 @@
 #include <signal.h>
 
 
-struct listProcess{
+typedef struct listProcess{
 	
 	long processNumber ;
 	pid_t pid ;	     // pid
@@ -23,27 +23,24 @@ struct listProcess{
 	struct listProcess *nextPtr ;
 	
 };
-typedef struct listProcess ListProcess ; 
-typedef ListProcess *ListProcessPtr;
+typedef listProcess *ListProcessPtr;
 
 //This struct is for bookmark commands
-struct bookmark{
+typedef struct bookmark{
 
 	char progName[50] ; // program name which added into bookmark
 	struct bookmark *nextPtr ;
 
 };
-typedef struct bookmark bookmarks ; 
-typedef bookmarks *bookmarkPtr ; 
+typedef bookmark *bookmarkPtr ; 
 
-struct history
+typedef struct history
 {
 	char inputArgs[90];
 	struct history *previousPtr ;
 	struct history *nextPtr ;
 };
-typedef struct history History ;
-typedef History *HistoryPtr ;
+typedef history *HistoryPtr ;
 
 void setup(char inputBuffer[], char *args[],int *background);
 
