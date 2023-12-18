@@ -52,8 +52,8 @@ int findpathof(char *pth, const char *exe);
 void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]);
 void insertBookmark(bookmarkPtr *bPtr , char progName[]);
 void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]);
-int isEmpty(ListProcessPtr sPtr);
-int isEmptyBookmark(bookmarkPtr bPtr);
+
+
 void printListBookmark(bookmarkPtr bPtr);
 void printHistory(HistoryPtr hPtr);
 void deleteStoppedList(ListProcessPtr *currentPtr);
@@ -92,12 +92,6 @@ double processNumber = 1 ; //
 
 pid_t parentPid ; // stores the parent pid
 pid_t fgProcessPid = 0;
-
-//This checks if list is empty or not
-int isEmpty(ListProcessPtr sPtr){return sPtr == NULL;}
-
-// isempty for bookmark struct
-int isEmptyBookmark(bookmarkPtr bPtr){return bPtr == NULL;}
 
 /* The setup function below will not return any value, but it will just: read
 in the next command line; separate it into distinct arguments (using blanks as
@@ -333,7 +327,7 @@ void printListBookmark(bookmarkPtr bPtr){
 
 	int i=0 ;
 	bookmarkPtr tempPtr = bPtr ;
-	if (isEmptyBookmark(bPtr)) fprintf(stderr, "%s", "List is empty\n");
+	if (bPtr == NULL) fprintf(stderr, "%s", "List is empty\n");
 	else{
 		while(tempPtr->nextPtr != NULL){
 			printf("%d %s\n",i,tempPtr->progName);
@@ -392,7 +386,7 @@ void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr){
 
 	double index = atoi(charindex);
 
-	if(isEmptyBookmark(*currentPtr))
+	if(*currentPtr == NULL)
 		fprintf(stderr, "%s", "List is empty\n");
 	else{
 
@@ -431,7 +425,7 @@ void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr){
 	double index = atoi(charindex);
 	char *progpath ;
 
-	if(isEmptyBookmark(currentPtr))
+	if(currentPtr == NULL)
 		fprintf(stderr, "%s", "List is empty\n");
 	else{
 		bookmarkPtr tempPtr = currentPtr;
@@ -1117,7 +1111,7 @@ int main(void){
 
 	while (parentPid==getpid()){
 		background = 0;
-		if(isEmpty(startPtr))		processNumber=1;
+		if(startPtr == NULL)		processNumber=1;
 		printf("myshell: ");
 		fflush(0);
 
@@ -1136,7 +1130,7 @@ int main(void){
 
 		if(strcmp(args[0],"exit")==0) {
 			deleteStoppedList(&startPtr);
-			if(isEmpty(startPtr) != 0){
+			if((startPtr == NULL) != 0){
 				exit(1);
 			}else{
 				fprintf(stderr, "%s", "There are processes running in the background!\n");			
