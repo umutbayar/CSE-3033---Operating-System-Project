@@ -54,8 +54,8 @@ void insertBookmark(bookmarkPtr *bPtr , char progName[]);
 void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]);
 
 
-void printListBookmark(bookmarkPtr bPtr);
-void printHistory(HistoryPtr hPtr);
+
+
 void deleteStoppedList(ListProcessPtr *currentPtr);
 void deleteBookmarkList(char *charindex,bookmarkPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
@@ -306,33 +306,6 @@ void insertHistory(HistoryPtr *head , HistoryPtr *tail, char inputArgs[]){
 	}else{											//			   --prev------------------->
 		fprintf(stderr, "%s", "No memory available\n");
 	}
-}
-
-//This function is for printing the content of bookmark list
-void printListBookmark(bookmarkPtr bPtr){
-
-	int i=0 ;
-	bookmarkPtr tempPtr = bPtr ;
-	if (bPtr == NULL) fprintf(stderr, "%s", "List is empty\n");
-	else{
-		while(tempPtr->nextPtr != NULL){
-			printf("%d %s\n",i,tempPtr->progName);
-			i++;
-			tempPtr = tempPtr->nextPtr ;
-		}
-		printf("%d %s\n",i,tempPtr->progName);
-	}
-}
-
-void printHistory(HistoryPtr hPtr){
-
-	int i=0 ;
-	HistoryPtr temp = hPtr ;
-		while(temp->nextPtr != NULL && i!=3){
-			printf("%d -> %s , next-> %s , prev-> %s\n",i,temp->inputArgs,temp->nextPtr->inputArgs,temp->previousPtr->inputArgs);
-			temp = temp->nextPtr ;
-			i++;
-		}	
 }
 
 //This function is for deleting dead processes from background processes list
@@ -658,7 +631,17 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark){
 	}		
 	else if((strcmp(args[1],"-l")==0) && i==2){
 
-		printListBookmark(*startPtrBookmark);
+		int count=0 ;
+		bookmarkPtr tempPointer = *startPtrBookmark;
+		if (*startPtrBookmark == NULL) fprintf(stderr, "%s", "List is empty\n");
+		else{
+			while(tempPointer->nextPtr != NULL){
+				printf("%d %s\n",count,tempPointer->progName);
+				count++;
+				tempPointer = tempPointer->nextPtr ;
+			}
+			printf("%d %s\n",count,tempPointer->progName);
+		}
 
 	}
 	else if((strcmp(args[1],"-i")==0) && i==3){
