@@ -58,9 +58,8 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
-void searchCommand(char *args[]);
+void processCommand(char *args[]);
 int checkIORedirection(char *args[]);
-void formatInput(char *args[]);
 int main(void);
 
 char inputFileName[20];
@@ -837,26 +836,26 @@ void printSearchCommand(char *fileName, char *pattern)
 
 		char lineNumber[15] = {0};
 
-			int i = 0;
+		int i = 0;
 
-			int length = strlen(allLine);
-			int digitNum = 1;
+		int length = strlen(allLine);
+		int digitNum = 1;
 
-			for (i = 0; i < length; i++)
-			{
-				if (isdigit(allLine[i]))
-				{ // This will determine the number of digits
-					lineNumber[i] = allLine[i];
-					digitNum++;
-				}
-				else
-					break;
+		for (i = 0; i < length; i++)
+		{
+			if (isdigit(allLine[i]))
+			{ // This will determine the number of digits
+				lineNumber[i] = allLine[i];
+				digitNum++;
 			}
+			else
+				break;
+		}
 
-			for (i = 0; i < length; i++)
-			{
-				allLine[i] = allLine[digitNum + i];
-			}
+		for (i = 0; i < length; i++)
+		{
+			allLine[i] = allLine[digitNum + i];
+		}
 
 		if (strlen(file) < 1 || !isdigit(lineNumber[0]))
 		{
@@ -919,115 +918,145 @@ void listFilesRecursively(char *basePath, char *pattern)
 }
 
 // This function is for "search" command
-void searchCommand(char *args[])
+void processCommand(char *args[], int choice)
 {
-	bool valid = 0;
-	if (numOfArgs < 2)
+	if (choice)
 	{
-		fprintf(stderr, "%s", "Please check your arguments!!\n");
-		valid = 1;
-	}
-	else if (numOfArgs == 2)
-	{ // nonrecursive check
-
-		int length = strlen(args[1]);
-		char pattern[100];
-		strcpy(pattern, args[1]);
-
-		if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
-		{
-			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
-			valid = 1;
-		}
-	}
-	else if (numOfArgs == 3)
-	{ // recursive check
-		int length = strlen(args[2]);
-		char pattern[100];
-		strcpy(pattern, args[2]);
-
-		if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
-		{
-			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
-			valid = 1;
-		}
-
-		if (strcmp(args[1], "-r") != 0)
+		bool valid = 0;
+		if (numOfArgs < 2)
 		{
 			fprintf(stderr, "%s", "Please check your arguments!!\n");
 			valid = 1;
 		}
-	}
+		else if (numOfArgs == 2)
+		{ // nonrecursive check
 
-	if (valid)
-		return;
-	int i = 0;
-	while (args[i] != NULL)
-	{
-		i++;
-	}
+			int length = strlen(args[1]);
+			char pattern[100];
+			strcpy(pattern, args[1]);
 
-	if (i == 2)
-	{
-
-		char cmd[1000];
-
-		// without -r option
-		// it will look all the files which ends .c .C .h .H under current directory and find the 'command' input word in this files
-		struct dirent *de; // Pointer for directory entry
-
-		// opendir() returns a pointer of DIR type.
-		DIR *dr = opendir(".");
-
-		if (dr == NULL)
-		{ // opendir returns NULL if couldn't open directory
-
-			fprintf(stderr, "%s", "Could not open current directory\n");
-		}
-
-		/*
-		 *	Look all files under current directory and add find the files which endsWith .c .C .h .H , after finding call each of them and
-		 *   look if the files includes the 'pattern' which comes with argument of search commend
-		 */
-		while ((de = readdir(dr)) != NULL)
-		{
-
-			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
+			if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
 			{
+				fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
+				valid = 1;
+			}
+		}
+		else if (numOfArgs == 3)
+		{ // recursive check
+			int length = strlen(args[2]);
+			char pattern[100];
+			strcpy(pattern, args[2]);
 
-				char fName[50];
+			if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
+			{
+				fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
+				valid = 1;
+			}
 
-				strcpy(fName, de->d_name);
-
-				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
-														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
-				{
-
-					printSearchCommand(de->d_name, args[1]);
-				}
+			if (strcmp(args[1], "-r") != 0)
+			{
+				fprintf(stderr, "%s", "Please check your arguments!!\n");
+				valid = 1;
 			}
 		}
 
-		printf("\n");
-		closedir(dr);
-	}
-	else if (i == 3 && strcmp(args[1], "-r") == 0)
-	{ // recursive part
+		if (valid)
+			return;
+		int i = 0;
+		while (args[i] != NULL)
+		{
+			i++;
+		}
 
-		char cwd[PATH_MAX];
-		if (getcwd(cwd, sizeof(cwd)) != NULL)
+		if (i == 2)
 		{
 
-			listFilesRecursively(cwd, args[2]);
+			char cmd[1000];
+
+			// without -r option
+			// it will look all the files which ends .c .C .h .H under current directory and find the 'command' input word in this files
+			struct dirent *de; // Pointer for directory entry
+
+			// opendir() returns a pointer of DIR type.
+			DIR *dr = opendir(".");
+
+			if (dr == NULL)
+			{ // opendir returns NULL if couldn't open directory
+
+				fprintf(stderr, "%s", "Could not open current directory\n");
+			}
+
+			/*
+			 *	Look all files under current directory and add find the files which endsWith .c .C .h .H , after finding call each of them and
+			 *   look if the files includes the 'pattern' which comes with argument of search commend
+			 */
+			while ((de = readdir(dr)) != NULL)
+			{
+
+				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
+				{
+
+					char fName[50];
+
+					strcpy(fName, de->d_name);
+
+					if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
+															fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
+					{
+
+						printSearchCommand(de->d_name, args[1]);
+					}
+				}
+			}
+
+			printf("\n");
+			closedir(dr);
+		}
+		else if (i == 3 && strcmp(args[1], "-r") == 0)
+		{ // recursive part
+
+			char cwd[PATH_MAX];
+			if (getcwd(cwd, sizeof(cwd)) != NULL)
+			{
+
+				listFilesRecursively(cwd, args[2]);
+			}
+			else
+			{
+				fprintf(stderr, "%s", "getcwd() error\n");
+			}
 		}
 		else
 		{
-			fprintf(stderr, "%s", "getcwd() error\n");
+			fprintf(stderr, "%s", "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n");
 		}
 	}
 	else
 	{
-		fprintf(stderr, "%s", "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n");
+		int i = 0;
+		int a;
+		int counter;
+		int flag = 0;
+		for (i = 0; i < numOfArgs; i++)
+		{
+			if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
+			{
+				args[i] = NULL;
+				a = i;
+				counter = i + 1;
+				flag = 1;
+				break;
+			}
+		}
+
+		if (flag == 0)
+			return;
+
+		for (i = counter; i < numOfArgs; i++)
+		{
+			args[i] = NULL;
+		}
+		numOfArgs = numOfArgs - (numOfArgs - a); // Update number of arguments
 	}
 }
 
@@ -1123,35 +1152,6 @@ int checkIORedirection(char *args[])
 	}
 }
 
-void formatInput(char *args[])
-{
-
-	int i = 0;
-	int a;
-	int counter;
-	int flag = 0;
-	for (i = 0; i < numOfArgs; i++)
-	{
-		if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
-		{
-			args[i] = NULL;
-			a = i;
-			counter = i + 1;
-			flag = 1;
-			break;
-		}
-	}
-
-	if (flag == 0)
-		return;
-
-	for (i = counter; i < numOfArgs; i++)
-	{
-		args[i] = NULL;
-	}
-	numOfArgs = numOfArgs - (numOfArgs - a); // Update number of arguments
-}
-
 int main(void)
 {
 
@@ -1194,7 +1194,7 @@ int main(void)
 		{ // Eger ıo yazımında vs hata varsa error verip yeniden input almalı
 			continue;
 		}
-		formatInput(args);
+		processCommand(args, 1);
 
 		if (strcmp(args[0], "exit") == 0)
 		{
@@ -1210,7 +1210,7 @@ int main(void)
 		}
 		else if (strcmp(args[0], "search") == 0)
 		{
-			searchCommand(args);
+			processCommand(args, 0);
 			continue;
 		}
 		else if (strcmp(args[0], "bookmark") == 0)
