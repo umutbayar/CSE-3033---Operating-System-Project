@@ -56,7 +56,6 @@ void childSignalHandler(int signum);
 void sigtstpHandler();
 void inputRedirect();
 void outputRedirect();
-void childPart(char path[], char *args[]);
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
 int startsWith(const char *pre, const char *str);
 int isInteger(char arg[]);
@@ -565,25 +564,6 @@ void outputRedirect()
 	}
 }
 
-// This is for child
-void childPart(char path[], char *args[])
-{
-	if (inputRedirectFlag == 1)
-	{ // This is for myshell: myprog [args] < file.in
-		inputRedirect();
-
-		if (outputRedirectFlag == 1)
-		{ // This is for myprog [args] < file.in > file.out
-			outputRedirect();
-		}
-	}
-	else if (outputRedirectFlag == 1)
-	{ // This is for myprog [args] > file.out and myshell: myprog [args] >> file.out and myshell: myprog [args] 2> file.out
-		outputRedirect();
-	}
-	execv(path, args);
-}
-
 // This is for creating new child by using fork()
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr)
 {
@@ -615,7 +595,20 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	}
 	else
 	{ // Child Part
-		childPart(path, args);
+			if (inputRedirectFlag == 1)
+			{ // This is for myshell: myprog [args] < file.in
+				inputRedirect();
+
+				if (outputRedirectFlag == 1)
+				{ // This is for myprog [args] < file.in > file.out
+					outputRedirect();
+				}
+			}
+			else if (outputRedirectFlag == 1)
+			{ // This is for myprog [args] > file.out and myshell: myprog [args] >> file.out and myshell: myprog [args] 2> file.out
+				outputRedirect();
+			}
+			execv(path, args);
 	}
 }
 
