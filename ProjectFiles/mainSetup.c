@@ -655,7 +655,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		i++;
 	}
 
-	if (i == 3)
+	if (((strcmp(args[1], "-i") == 0) || (strcmp(args[1], "-d") == 0)) && i == 3)
 	{
 		char *temp = args[2];
 
