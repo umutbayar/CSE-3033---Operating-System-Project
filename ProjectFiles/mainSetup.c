@@ -58,7 +58,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
-void processCommand(char *args[]);
+void processCommand(char *args[], int choice);
 int checkIORedirection(char *args[]);
 int main(void);
 
