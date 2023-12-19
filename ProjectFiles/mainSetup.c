@@ -675,7 +675,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 		if (arg2IsInt == 0)
 		{	
-				bookmarkPtr tempPointer = startPtrBookmark;
+				bookmarkPtr *tempPointer = startPtrBookmark;
 				long index = atoi(args[2]);
 
 				if (*tempPointer == NULL)
@@ -918,7 +918,7 @@ void processCommand(char *args[], int choice)
 	if (choice)
 	{
 		bool valid = 0;
-		if (numOfArgs < 2 && args[0] != 'l')
+		if (numOfArgs < 2 && args[0][0] != 'l' && args[0][0] != 'g')
 		{
 			fprintf(stderr, "%s", "Please check your arguments!!\n");
 			valid = 1;
@@ -963,7 +963,11 @@ void processCommand(char *args[], int choice)
 			i++;
 		}
 
-		if (i == 2)
+
+		if (i == 1) {
+
+		}
+		else if (i == 2)
 		{
 
 			char cmd[1000];
