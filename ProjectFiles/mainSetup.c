@@ -779,7 +779,8 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			strcat(exe, args[t]);
 			strcat(exe, " ");
 		}
-		inserting(NULL, NULL, startPtrBookmark, exe, 1);
+		pid_t tempPid;
+		inserting(NULL, tempPid, startPtrBookmark, exe, 1);
 		exe[0] = '\0';
 	}
 	else
