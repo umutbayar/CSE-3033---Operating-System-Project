@@ -677,9 +677,9 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 
 		if (arg2IsInt == 0)
-		{
-			bookmarkPtr tempPointer = startPtrBookmark;
-			long index = atoi(args[2]);
+		{	
+				bookmarkPtr *tempPointer = startPtrBookmark;
+				long index = atoi(args[2]);
 
 			if (*tempPointer == NULL)
 				fprintf(stderr, "%s", "List is empty\n");
@@ -921,7 +921,7 @@ void processCommand(char *args[], int choice)
 	if (choice)
 	{
 		bool valid = 0;
-		if (numOfArgs < 2)
+		if (numOfArgs < 2 && args[0] != 'l')
 		{
 			fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 			valid = 1;
@@ -966,10 +966,7 @@ void processCommand(char *args[], int choice)
 			i++;
 		}
 
-		if (i == 1)
-		{
-		}
-		else if (i == 2)
+		if (i == 2)
 		{
 
 			char cmd[1000];
