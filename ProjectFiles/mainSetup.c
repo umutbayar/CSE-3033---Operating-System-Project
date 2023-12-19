@@ -665,10 +665,10 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			if (!isdigit(temp[index]))
 			{
 				fprintf(stderr, "%s", "Please check your arguments !\n");
-				arg2IsInt 1;
+				arg2IsInt = 1;
 			}
 		if (arg2IsInt == 1) {
-			arg2IsInt 0;
+			arg2IsInt = 0;
 		}
 	}
 
