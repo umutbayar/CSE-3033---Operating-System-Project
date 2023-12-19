@@ -921,7 +921,7 @@ void processCommand(char *args[], int choice)
 	if (choice)
 	{
 		bool valid = 0;
-		if (numOfArgs < 2 && args[0] != 'l')
+		if (numOfArgs < 2 && args[0][0] != 'l' && args[0][0] != 'g')
 		{
 			fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 			valid = 1;
@@ -966,7 +966,10 @@ void processCommand(char *args[], int choice)
 			i++;
 		}
 
-		if (i == 2)
+		if (i == 1) {
+
+		}
+		else if (i == 2)
 		{
 
 			char cmd[1000];
