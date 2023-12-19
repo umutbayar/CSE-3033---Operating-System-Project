@@ -56,7 +56,6 @@ void childSignalHandler(int signum);
 void sigtstpHandler();
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
-void clearLine(char args[], char lineNumber[]);
 void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
 void searchCommand(char *args[]);
@@ -667,7 +666,8 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 				fprintf(stderr, "%s", "Please check your arguments !\n");
 				arg2IsInt = 1;
 			}
-		if (arg2IsInt == 1) {
+		if (arg2IsInt == 1)
+		{
 			arg2IsInt = 0;
 		}
 	}
@@ -791,30 +791,6 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		return;
 	}
 }
-// This is for fixing line and getting the line number.
-void clearLine(char args[], char lineNumber[])
-{
-	int i = 0;
-
-	int length = strlen(args);
-	int digitNum = 1;
-
-	for (i = 0; i < length; i++)
-	{
-		if (isdigit(args[i]))
-		{ // This will determine the number of digits
-			lineNumber[i] = args[i];
-			digitNum++;
-		}
-		else
-			break;
-	}
-
-	for (i = 0; i < length; i++)
-	{
-		args[i] = args[digitNum + i];
-	}
-}
 
 /**
 This function takes fileName and pattern arguments.
@@ -861,7 +837,26 @@ void printSearchCommand(char *fileName, char *pattern)
 
 		char lineNumber[15] = {0};
 
-		clearLine(allLine, lineNumber);
+			int i = 0;
+
+			int length = strlen(allLine);
+			int digitNum = 1;
+
+			for (i = 0; i < length; i++)
+			{
+				if (isdigit(allLine[i]))
+				{ // This will determine the number of digits
+					lineNumber[i] = allLine[i];
+					digitNum++;
+				}
+				else
+					break;
+			}
+
+			for (i = 0; i < length; i++)
+			{
+				allLine[i] = allLine[digitNum + i];
+			}
 
 		if (strlen(file) < 1 || !isdigit(lineNumber[0]))
 		{
