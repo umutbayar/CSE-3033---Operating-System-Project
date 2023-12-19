@@ -14,6 +14,8 @@
 #include <dirent.h>
 #include <signal.h>
 
+#define PATH_MAX 4096
+
 struct listProcess
 {
 
@@ -49,7 +51,6 @@ int findpathof(char *pth, const char *exe);
 void insert(ListProcessPtr *sPtr, pid_t pid, char progName[]);
 void insertBookmark(bookmarkPtr *bPtr, char progName[]);
 void deleteStoppedList(ListProcessPtr *currentPtr);
-void deleteBookmarkList(char *charindex, bookmarkPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
@@ -341,49 +342,6 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 			previousPtr->nextPtr = tempPtr->nextPtr;
 			free(delPtr);
 			deleteStoppedList(currentPtr);
-		}
-	}
-}
-
-// This function is for deleting items from bookmark list
-void deleteBookmarkList(char *charindex, bookmarkPtr *currentPtr)
-{
-
-	long index = atoi(charindex);
-
-	if (*currentPtr == NULL)
-		fprintf(stderr, "%s", "List is empty\n");
-	else
-	{
-
-		// delete first item
-		if (index == 0)
-		{
-			bookmarkPtr tempPtr = *currentPtr;
-			*currentPtr = (*currentPtr)->nextPtr;
-			free(tempPtr);
-		}
-		else
-		{ // delete others
-			bookmarkPtr previousPtr = *currentPtr;
-			bookmarkPtr tempPtr = (*currentPtr)->nextPtr;
-			long temp = 1;
-
-			while (temp != index && tempPtr != NULL)
-			{
-				previousPtr = tempPtr;
-				tempPtr = tempPtr->nextPtr;
-				temp++;
-			}
-			if (tempPtr == NULL)
-				fprintf(stderr, "%s", "There is no bookmark with this index.\n");
-			else
-			{
-
-				bookmarkPtr delPtr = tempPtr;
-				previousPtr->nextPtr = tempPtr->nextPtr;
-				free(delPtr);
-			}
 		}
 	}
 }
@@ -716,8 +674,45 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 
 		if (arg2IsInt == 0)
-		{
-			deleteBookmarkList(args[2], startPtrBookmark);
+		{	
+				bookmarkPtr tempPointer = startPtrBookmark;
+				long index = atoi(args[2]);
+
+				if (*tempPointer == NULL)
+					fprintf(stderr, "%s", "List is empty\n");
+				else
+				{
+
+					// delete first item
+					if (index == 0)
+					{
+						bookmarkPtr tempPtr = *tempPointer;
+						*tempPointer = (*tempPointer)->nextPtr;
+						free(tempPtr);
+					}
+					else
+					{ // delete others
+						bookmarkPtr previousPtr = *tempPointer;
+						bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
+						long temp = 1;
+
+						while (temp != index && tempPtr != NULL)
+						{
+							previousPtr = tempPtr;
+							tempPtr = tempPtr->nextPtr;
+							temp++;
+						}
+						if (tempPtr == NULL)
+							fprintf(stderr, "%s", "There is no bookmark with this index.\n");
+						else
+						{
+
+							bookmarkPtr delPtr = tempPtr;
+							previousPtr->nextPtr = tempPtr->nextPtr;
+							free(delPtr);
+						}
+					}
+				}
 			return;
 		}
 		else
@@ -923,7 +918,7 @@ void processCommand(char *args[], int choice)
 	if (choice)
 	{
 		bool valid = 0;
-		if (numOfArgs < 2)
+		if (numOfArgs < 2 && args[0] != 'l')
 		{
 			fprintf(stderr, "%s", "Please check your arguments!!\n");
 			valid = 1;
