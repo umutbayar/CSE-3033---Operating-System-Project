@@ -15,6 +15,10 @@
 #include <signal.h>
 
 #define PATH_MAX 4096
+#define ERROR_CHECK_ARGUMENTS "Please check your arguments!!\n"
+#define ERROR_OPEN_DIRECTORY "Could not open current directory\n"
+#define ERROR_GETCWD "getcwd() error\n"
+#define ERROR_TWO_WAYS "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"
 
 struct listProcess
 {
@@ -46,10 +50,9 @@ struct history
 typedef struct history History;
 typedef History *HistoryPtr;
 
-void setup(char inputBuffer[], char *args[], int *background);
-int findpathof(char *pth, const char *exe);
-void insert(ListProcessPtr *sPtr, pid_t pid, char progName[]);
-void insertBookmark(bookmarkPtr *bPtr, char progName[]);
+void setup(char inputBuffer[], char *args[], int *background); //----------------------------------------------------------------------
+int findpathof(char *pth, const char *exe);					   //-----------------------------------------------
+void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice);
 void deleteStoppedList(ListProcessPtr *currentPtr);
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
@@ -61,7 +64,7 @@ void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
 void processCommand(char *args[], int choice);
 int checkIORedirection(char *args[]);
-int main(void);
+int main(void); //----------------------------------------------------------------------
 
 char inputFileName[20];
 char outputFileName[20];
@@ -235,77 +238,77 @@ int findpathof(char *pth, const char *exe)
 	return found;
 }
 
-// This is insert function for background process
-void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
+void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice)
 {
 
-	ListProcessPtr newPtr = malloc(sizeof(ListProcess)); // Create Node
-
-	if (newPtr != NULL)
+	if (choice)
 	{
-		strcpy(newPtr->progName, progName);
-		newPtr->processNumber = processNumber;
-		newPtr->pid = pid;
-		newPtr->nextPtr = NULL;
+		ListProcessPtr newPtr = malloc(sizeof(ListProcess)); // Create Node
 
-		ListProcessPtr previousPtr = NULL;
-		ListProcessPtr currentPtr = *sPtr;
-
-		while (currentPtr != NULL)
+		if (newPtr != NULL)
 		{
-			previousPtr = currentPtr;
-			currentPtr = currentPtr->nextPtr;
-		}
+			strcpy(newPtr->progName, progName);
+			newPtr->processNumber = processNumber;
+			newPtr->pid = pid;
+			newPtr->nextPtr = NULL;
 
-		if (previousPtr == NULL)
-		{ // insert to the beginning
-			newPtr->nextPtr = *sPtr;
-			*sPtr = newPtr;
+			ListProcessPtr previousPtr = NULL;
+			ListProcessPtr currentPtr = *sPtr;
+
+			while (currentPtr != NULL)
+			{
+				previousPtr = currentPtr;
+				currentPtr = currentPtr->nextPtr;
+			}
+
+			if (previousPtr == NULL)
+			{ // inser to the beginning
+				newPtr->nextPtr = *sPtr;
+				*sPtr = newPtr;
+			}
+			else
+			{
+				previousPtr->nextPtr = newPtr;
+				newPtr->nextPtr = currentPtr;
+			}
 		}
 		else
 		{
-			previousPtr->nextPtr = newPtr;
-			newPtr->nextPtr = currentPtr;
+			fprintf(stderr, "%s", "No memory available\n");
 		}
 	}
 	else
 	{
-		fprintf(stderr, "%s", "No memory available\n");
-	}
-}
+		bookmarkPtr newPtr = malloc(sizeof(bookmarks));
 
-// inserting program into bookmark struct
-void insertBookmark(bookmarkPtr *bPtr, char progName[])
-{
-	bookmarkPtr newPtr = malloc(sizeof(bookmarks));
-
-	if (newPtr != NULL)
-	{
-		strcpy(newPtr->progName, progName);
-		newPtr->nextPtr = NULL;
-		bookmarkPtr previousPtr = NULL;
-		bookmarkPtr currentPtr = *bPtr;
-
-		while (currentPtr != NULL)
+		if (newPtr != NULL)
 		{
-			previousPtr = currentPtr;
-			currentPtr = currentPtr->nextPtr;
-		}
+			strcpy(newPtr->progName, progName);
+			newPtr->nextPtr = NULL;
+			bookmarkPtr previousPtr = NULL;
+			bookmarkPtr currentPtr = *bPtr;
 
-		if (previousPtr == NULL)
-		{ // insert to the beginning
-			newPtr->nextPtr = *bPtr;
-			*bPtr = newPtr;
+			while (currentPtr != NULL)
+			{
+				previousPtr = currentPtr;
+				currentPtr = currentPtr->nextPtr;
+			}
+
+			if (previousPtr == NULL)
+			{ // inser to the beginning
+				newPtr->nextPtr = *bPtr;
+				*bPtr = newPtr;
+			}
+			else
+			{
+				previousPtr->nextPtr = newPtr;
+				newPtr->nextPtr = currentPtr;
+			}
 		}
 		else
 		{
-			previousPtr->nextPtr = newPtr;
-			newPtr->nextPtr = currentPtr;
+			fprintf(stderr, "%s", "No memory available\n");
 		}
-	}
-	else
-	{
-		fprintf(stderr, "%s", "No memory available\n");
 	}
 }
 
@@ -451,7 +454,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 		{ // background Process
 			waitpid(childPid, NULL, WNOHANG);
 			setpgid(childPid, childPid); // This will put that process into its process group
-			insert(&(*sPtr), childPid, args[0]);
+			inserting(&(*sPtr), childPid, NULL, args[0], 0);
 			processNumber++;
 		}
 		else
@@ -674,45 +677,45 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 
 		if (arg2IsInt == 0)
-		{	
-				bookmarkPtr tempPointer = startPtrBookmark;
-				long index = atoi(args[2]);
+		{
+			bookmarkPtr tempPointer = startPtrBookmark;
+			long index = atoi(args[2]);
 
-				if (*tempPointer == NULL)
-					fprintf(stderr, "%s", "List is empty\n");
-				else
+			if (*tempPointer == NULL)
+				fprintf(stderr, "%s", "List is empty\n");
+			else
+			{
+
+				// delete first item
+				if (index == 0)
 				{
+					bookmarkPtr tempPtr = *tempPointer;
+					*tempPointer = (*tempPointer)->nextPtr;
+					free(tempPtr);
+				}
+				else
+				{ // delete others
+					bookmarkPtr previousPtr = *tempPointer;
+					bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
+					long temp = 1;
 
-					// delete first item
-					if (index == 0)
+					while (temp != index && tempPtr != NULL)
 					{
-						bookmarkPtr tempPtr = *tempPointer;
-						*tempPointer = (*tempPointer)->nextPtr;
-						free(tempPtr);
+						previousPtr = tempPtr;
+						tempPtr = tempPtr->nextPtr;
+						temp++;
 					}
+					if (tempPtr == NULL)
+						fprintf(stderr, "%s", "There is no bookmark with this index.\n");
 					else
-					{ // delete others
-						bookmarkPtr previousPtr = *tempPointer;
-						bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
-						long temp = 1;
+					{
 
-						while (temp != index && tempPtr != NULL)
-						{
-							previousPtr = tempPtr;
-							tempPtr = tempPtr->nextPtr;
-							temp++;
-						}
-						if (tempPtr == NULL)
-							fprintf(stderr, "%s", "There is no bookmark with this index.\n");
-						else
-						{
-
-							bookmarkPtr delPtr = tempPtr;
-							previousPtr->nextPtr = tempPtr->nextPtr;
-							free(delPtr);
-						}
+						bookmarkPtr delPtr = tempPtr;
+						previousPtr->nextPtr = tempPtr->nextPtr;
+						free(delPtr);
 					}
 				}
+			}
 			return;
 		}
 		else
@@ -776,7 +779,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			strcat(exe, args[t]);
 			strcat(exe, " ");
 		}
-		insertBookmark(startPtrBookmark, exe);
+		inserting(NULL, NULL, startPtrBookmark, exe, 1);
 		exe[0] = '\0';
 	}
 	else
@@ -918,9 +921,9 @@ void processCommand(char *args[], int choice)
 	if (choice)
 	{
 		bool valid = 0;
-		if (numOfArgs < 2 && args[0] != 'l')
+		if (numOfArgs < 2)
 		{
-			fprintf(stderr, "%s", "Please check your arguments!!\n");
+			fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 			valid = 1;
 		}
 		else if (numOfArgs == 2)
@@ -932,7 +935,7 @@ void processCommand(char *args[], int choice)
 
 			if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
 			{
-				fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
+				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 				valid = 1;
 			}
 		}
@@ -944,13 +947,13 @@ void processCommand(char *args[], int choice)
 
 			if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
 			{
-				fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
+				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 				valid = 1;
 			}
 
 			if (strcmp(args[1], "-r") != 0)
 			{
-				fprintf(stderr, "%s", "Please check your arguments!!\n");
+				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 				valid = 1;
 			}
 		}
@@ -963,7 +966,10 @@ void processCommand(char *args[], int choice)
 			i++;
 		}
 
-		if (i == 2)
+		if (i == 1)
+		{
+		}
+		else if (i == 2)
 		{
 
 			char cmd[1000];
@@ -978,7 +984,7 @@ void processCommand(char *args[], int choice)
 			if (dr == NULL)
 			{ // opendir returns NULL if couldn't open directory
 
-				fprintf(stderr, "%s", "Could not open current directory\n");
+				fprintf(stderr, "%s", ERROR_OPEN_DIRECTORY);
 			}
 
 			/*
@@ -1018,12 +1024,12 @@ void processCommand(char *args[], int choice)
 			}
 			else
 			{
-				fprintf(stderr, "%s", "getcwd() error\n");
+				fprintf(stderr, "%s", ERROR_GETCWD);
 			}
 		}
 		else
 		{
-			fprintf(stderr, "%s", "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n");
+			fprintf(stderr, "%s", ERROR_TWO_WAYS);
 		}
 	}
 	else
