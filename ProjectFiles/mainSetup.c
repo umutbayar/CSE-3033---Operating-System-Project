@@ -50,10 +50,10 @@ struct history
 typedef struct history History;
 typedef History *HistoryPtr;
 
-void setup(char inputBuffer[], char *args[], int *background); //----------------------------------------------------------------------
-int findpathof(char *pth, const char *exe);					   //-----------------------------------------------
-void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice);
-void deleteStoppedList(ListProcessPtr *currentPtr);
+void setup(char inputBuffer[], char *args[], int *background);									 //----------------------------------------------------------------------
+int findpathof(char *pth, const char *exe);														 //-----------------------------------------------
+void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice); //-----------------------------------------------
+void deleteStoppedList(ListProcessPtr *currentPtr);												 //  Recursion
 void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
@@ -665,7 +665,40 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 		if (arg2IsInt == 0)
 		{
-			runBookmarkIndex(args[2], *startPtrBookmark);
+				long index = atoi(args[2]);
+				char *progpath;
+
+				if (*startPtrBookmark == NULL)
+					fprintf(stderr, "%s", "List is empty\n");
+				else
+				{
+					bookmarkPtr tempPtr = *startPtrBookmark;
+					long j = 0;
+					while (tempPtr != NULL && j != index)
+					{
+						tempPtr = tempPtr->nextPtr;
+						j++;
+					}
+					if (tempPtr == NULL)
+					{
+						fprintf(stderr, "%s", "There is no bookmark in this index.\n");
+					}
+					else
+					{
+						char exe[90];
+						strcpy(exe, tempPtr->progName);
+						int length = strlen(exe);
+						int i = 0;
+						exe[length - 2] = '\0';
+						for (i = 0; i < length; i++)
+						{
+							exe[i] = exe[i + 1];
+						}
+						char command[100];
+						sprintf(command, "%s", exe);
+						system(command);
+					}
+				}
 			return;
 		}
 		else
@@ -677,9 +710,9 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 
 		if (arg2IsInt == 0)
-		{	
-				bookmarkPtr *tempPointer = startPtrBookmark;
-				long index = atoi(args[2]);
+		{
+			bookmarkPtr *tempPointer = startPtrBookmark;
+			long index = atoi(args[2]);
 
 			if (*tempPointer == NULL)
 				fprintf(stderr, "%s", "List is empty\n");
@@ -967,8 +1000,8 @@ void processCommand(char *args[], int choice)
 			i++;
 		}
 
-		if (i == 1) {
-
+		if (i == 1)
+		{
 		}
 		else if (i == 2)
 		{
