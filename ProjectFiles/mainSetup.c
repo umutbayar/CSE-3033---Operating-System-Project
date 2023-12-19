@@ -55,7 +55,6 @@ int killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
 void sigtstpHandler();
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
-int startsWith(const char *pre, const char *str);
 int isInteger(char arg[]);
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void clearLine(char args[], char lineNumber[]);
@@ -644,14 +643,6 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	}
 }
 
-// This is for checking the first char of string
-int startsWith(const char *pre, const char *str)
-{
-	size_t lenpre = strlen(pre),
-		   lenstr = strlen(str);
-	return lenstr < lenpre ? 0 : memcmp(pre, str, lenpre) == 0;
-}
-
 int isInteger(char arg[])
 {
 	int length, i;
@@ -668,6 +659,8 @@ int isInteger(char arg[])
 // This is for "bookmark" command part
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 {
+
+	char *tempStringComp = "\"";
 
 	int i = 0;
 	while (args[i] != NULL)
@@ -729,7 +722,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			return;
 		}
 	}
-	else if (startsWith("\"", args[1]))
+	else if (strlen(args[1]) < strlen(tempStringComp) ? 0 : memcmp(tempStringComp, args[1], strlen(tempStringComp)) == 0)
 	{
 
 		// This is for checking the last char of command
