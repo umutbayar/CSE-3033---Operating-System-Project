@@ -55,7 +55,6 @@ int killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
 void sigtstpHandler();
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
-int isInteger(char arg[]);
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void clearLine(char args[], char lineNumber[]);
 void printSearchCommand(char *fileName, char *pattern);
@@ -643,29 +642,34 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	}
 }
 
-int isInteger(char arg[])
-{
-	int length, i;
-	length = strlen(arg);
-	for (i = 0; i < length; i++)
-		if (!isdigit(arg[i]))
-		{
-			fprintf(stderr, "%s", "Please check your arguments !\n");
-			return 1;
-		}
-	return 0;
-}
-
 // This is for "bookmark" command part
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 {
 
 	char *tempStringComp = "\"";
+	int arg2IsInt = 0;
 
 	int i = 0;
 	while (args[i] != NULL)
 	{
 		i++;
+	}
+
+	if (i == 3)
+	{
+		char *temp = args[2];
+
+		int length, index;
+		length = strlen(temp);
+		for (index = 0; index < length; index++)
+			if (!isdigit(temp[index]))
+			{
+				fprintf(stderr, "%s", "Please check your arguments !\n");
+				arg2IsInt 1;
+			}
+		if (arg2IsInt == 1) {
+			arg2IsInt 0;
+		}
 	}
 
 	if (i == 1)
@@ -699,7 +703,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	else if ((strcmp(args[1], "-i") == 0) && i == 3)
 	{
 
-		if (isInteger(args[2]) == 0)
+		if (arg2IsInt == 0)
 		{
 			runBookmarkIndex(args[2], *startPtrBookmark);
 			return;
@@ -712,7 +716,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	else if ((strcmp(args[1], "-d") == 0) && i == 3)
 	{
 
-		if (isInteger(args[2]) == 0)
+		if (arg2IsInt == 0)
 		{
 			deleteBookmarkList(args[2], startPtrBookmark);
 			return;
