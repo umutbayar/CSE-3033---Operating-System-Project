@@ -54,7 +54,6 @@ void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
 int killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
 void sigtstpHandler();
-void inputRedirect();
 void outputRedirect();
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
 int startsWith(const char *pre, const char *str);
@@ -481,35 +480,6 @@ void sigtstpHandler()
 	fgProcessPid = 0;
 }
 
-// This is for input redirection .
-void inputRedirect()
-{
-
-	long fdInput;
-
-	if (inputRedirectFlag == 1)
-	{ /// This is for getting input from file
-		fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-		if (fdInput == -1)
-		{
-			fprintf(stderr, "%s", "Failed to open the file given as input...\n");
-
-			return;
-		}
-		if (dup2(fdInput, STDIN_FILENO) == -1)
-		{
-			fprintf(stderr, "%s", "Failed to redirect standard input...\n");
-			return;
-		}
-
-		if (close(fdInput) == -1)
-		{
-			fprintf(stderr, "%s", "Failed to close the input file...\n");
-			return;
-		}
-	}
-}
-
 // This is for output redirection
 void outputRedirect()
 {
@@ -595,20 +565,43 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	}
 	else
 	{ // Child Part
-			if (inputRedirectFlag == 1)
-			{ // This is for myshell: myprog [args] < file.in
-				inputRedirect();
+		if (inputRedirectFlag == 1)
+		{ // This is for myshell: myprog [args] < file.in
 
-				if (outputRedirectFlag == 1)
-				{ // This is for myprog [args] < file.in > file.out
-					outputRedirect();
+			long fdInput;
+
+			if (inputRedirectFlag == 1)
+			{ /// This is for getting input from file
+				fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+				if (fdInput == -1)
+				{
+					fprintf(stderr, "%s", "Failed to open the file given as input...\n");
+
+					return;
+				}
+				if (dup2(fdInput, STDIN_FILENO) == -1)
+				{
+					fprintf(stderr, "%s", "Failed to redirect standard input...\n");
+					return;
+				}
+
+				if (close(fdInput) == -1)
+				{
+					fprintf(stderr, "%s", "Failed to close the input file...\n");
+					return;
 				}
 			}
-			else if (outputRedirectFlag == 1)
-			{ // This is for myprog [args] > file.out and myshell: myprog [args] >> file.out and myshell: myprog [args] 2> file.out
+
+			if (outputRedirectFlag == 1)
+			{ // This is for myprog [args] < file.in > file.out
 				outputRedirect();
 			}
-			execv(path, args);
+		}
+		else if (outputRedirectFlag == 1)
+		{ // This is for myprog [args] > file.out and myshell: myprog [args] >> file.out and myshell: myprog [args] 2> file.out
+			outputRedirect();
+		}
+		execv(path, args);
 	}
 }
 
