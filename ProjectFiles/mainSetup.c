@@ -602,13 +602,16 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 		char *temp = args[2];
 
-		long index;
-		for (index = 0; index < strlen(temp); index++)
+		long index = 0;
+		while (index < strlen(temp)) {
 			if (!isdigit(temp[index]))
 			{
 				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 				arg2IsInt = 1;
 			}
+			index++;
+		}
+			
 		if (arg2IsInt == 1)
 		{
 			arg2IsInt = 0;
@@ -694,9 +697,10 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 					strcpy(exe, tempPtr->progName);
 					long i = 0;
 					exe[strlen(exe) - 2] = '\0';
-					for (i = 0; i < strlen(exe); i++)
+					while (i < strlen(exe))
 					{
 						exe[i] = exe[i + 1];
+						i++;
 					}
 					char command[100];
 					sprintf(command, "%s", exe);
@@ -770,9 +774,11 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 		if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] != '\"')
 		{
-			for (t = 0; t < lengthOfFirstArgument - 1; t++)
+			t = 0;
+			while (t < lengthOfFirstArgument - 1)
 			{
 				firstArgument[t] = firstArgument[t + 1];
+				t++;
 			}
 			firstArgument[lengthOfFirstArgument - 1] = '\0';
 		}
@@ -780,9 +786,11 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		{
 			firstArgument[lengthOfFirstArgument - 1] = '\0';
 
-			for (t = 0; t < lengthOfFirstArgument - 1; t++)
+			t = 0;
+			while (t < lengthOfFirstArgument - 1)
 			{
 				firstArgument[t] = firstArgument[t + 1];
+				t++;
 			}
 		}
 		exec = firstArgument;
@@ -797,10 +805,12 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 
 		char exe[90] = {""};
-		for (t = 1; t < numOfArgs; t++)
+		t = 1;
+		while (t < numOfArgs)
 		{
 			strcat(exe, args[t]);
 			strcat(exe, " ");
+			t++;
 		}
 		pid_t tempPid;
 		insertBookmark(startPtrBookmark, exe);
@@ -855,7 +865,7 @@ void printSearchCommand(char *fileName, char *pattern)
 		long i = 0;
 		long digitNum = 1;
 
-		for (i = 0; i < strlen(allLine); i++)
+		while (i < strlen(allLine))
 		{
 			if (!isdigit(allLine[i]))
 			{
@@ -865,12 +875,15 @@ void printSearchCommand(char *fileName, char *pattern)
 			{
 				lineNumber[i] = allLine[i];
 				digitNum++;
+				i++;
 			}
 		}
 
-		for (i = 0; i < strlen(allLine); i++)
+		i = 0;
+		while (i < strlen(allLine))
 		{
 			allLine[i] = allLine[digitNum + i];
+			i++;
 		}
 
 		if (strlen(file) >= 1 && isdigit(lineNumber[0]))
@@ -1007,7 +1020,7 @@ void formatInput(char *args[])
 	long a;
 	long counter;
 	long flag = 0;
-	for (i = 0; i < numOfArgs; i++)
+	while (i < numOfArgs)
 	{
 		if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
@@ -1017,13 +1030,16 @@ void formatInput(char *args[])
 			flag = 1;
 			break;
 		}
+		i++;
 	}
 
 	if (flag != 0)
 	{
-		for (i = counter; i < numOfArgs; i++)
+		i = counter;
+		while (i < numOfArgs)
 		{
 			args[i] = NULL;
+			i++;
 		}
 
 		numOfArgs = numOfArgs - (numOfArgs - a);
@@ -1045,14 +1061,15 @@ long checkIORedirection(char *args[])
 		return 1;
 	}
 
-	long a;
+	long a = 0;
 	long io;
-	for (a = 0; a < numOfArgs; a++)
+	while (a < numOfArgs)
 	{
 		if (strcmp(args[a], "<") == 0 || strcmp(args[a], ">") == 0 || strcmp(args[a], ">>") == 0 || strcmp(args[a], "2>") == 0)
 		{
 			io = 1;
 		}
+		a++;
 	}
 
 	if (io != 1)
@@ -1071,10 +1088,9 @@ long checkIORedirection(char *args[])
 		}
 	}
 
-	long i;
-	for (i = 0; i < numOfArgs; i++)
+	long i = 0;
+	while (i < numOfArgs)
 	{
-		
 		if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
 			if (i + 1 < numOfArgs) {
@@ -1127,6 +1143,7 @@ long checkIORedirection(char *args[])
 
 			return 0;
 		}
+		i++;
 	}
 }
 
