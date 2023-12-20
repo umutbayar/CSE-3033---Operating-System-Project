@@ -64,7 +64,7 @@ void listFilesRecursively(char *basePath, char *pattern);
 long checkSearchArguments(char *args[]);
 void formatInput(char *args[]);
 void searchCommand(char *args[]);
-int checkIORedirection(char *args[]);
+long checkIORedirection(char *args[]);
 int main(void);
 
 char inputFileName[20];
@@ -144,83 +144,84 @@ void setup(char inputBuffer[], char *args[], int *background)
 long findpathof(char *pth, const char *exe)
 {
 	char *searchpath;
-	char *beg, *end;
-	long stop, found;
+	char *beg;
+	char *end;
+	long stop;
+	long found;
 	long len;
 
-	if (strchr(exe, '/') != NULL)
+	if (strchr(exe, '/') == NULL)
 	{
-		if (realpath(exe, pth) == NULL)
-		{
+		searchpath = getenv("PATH");
+		if (searchpath == NULL)
 			return 0;
-		}
-		else
+		if (strlen(searchpath) <= 0)
+			return 0;
+
+		beg = searchpath;
+		stop = 0;
+		found = 0;
+		do
 		{
+			end = strchr(beg, ':');
+
+			if (end != NULL)
+			{
+				strncpy(pth, beg, end - beg);
+				pth[end - beg] = '\0';
+				len = end - beg;
+			}
+			else
+			{
+				stop = 1;
+				strncpy(pth, beg, PATH_MAX);
+				len = strlen(pth);
+			}
+			if (pth[len - 1] != '/')
+				strncat(pth, "/", 2);
+			strncat(pth, exe, PATH_MAX - len);
+
 			long result;
 			struct stat statinfo;
 
 			result = stat(pth, &statinfo);
 			if (result < 0)
-				return 0;
+				found = 0;
 			if (!S_ISREG(statinfo.st_mode))
-				return 0;
-
+				found = 0;
 			if (statinfo.st_uid == geteuid())
-				return statinfo.st_mode & S_IXUSR;
+				found = statinfo.st_mode & S_IXUSR;
 			if (statinfo.st_gid == getegid())
-				return statinfo.st_mode & S_IXGRP;
-			return statinfo.st_mode & S_IXOTH;
-		}
+				found = statinfo.st_mode & S_IXGRP;
+			found = statinfo.st_mode & S_IXOTH;
+
+			if (!stop)
+				beg = end + 1;
+		} while (!stop && !found);
+
+		return found;
 	}
 
-	searchpath = getenv("PATH");
-	if (searchpath == NULL)
-		return 0;
-	if (strlen(searchpath) <= 0)
-		return 0;
-
-	beg = searchpath;
-	stop = 0;
-	found = 0;
-	do
+	if (realpath(exe, pth) != NULL)
 	{
-		end = strchr(beg, ':');
-		if (end == NULL)
-		{
-			stop = 1;
-			strncpy(pth, beg, PATH_MAX);
-			len = strlen(pth);
-		}
-		else
-		{
-			strncpy(pth, beg, end - beg);
-			pth[end - beg] = '\0';
-			len = end - beg;
-		}
-		if (pth[len - 1] != '/')
-			strncat(pth, "/", 2);
-		strncat(pth, exe, PATH_MAX - len);
-
 		long result;
 		struct stat statinfo;
 
 		result = stat(pth, &statinfo);
 		if (result < 0)
-			found = 0;
-		if (!S_ISREG(statinfo.st_mode))
-			found = 0;
-
-		if (statinfo.st_uid == geteuid())
-			found = statinfo.st_mode & S_IXUSR;
-		if (statinfo.st_gid == getegid())
-			found = statinfo.st_mode & S_IXGRP;
-		found = statinfo.st_mode & S_IXOTH;
-
-		if (!stop)
-			beg = end + 1;
-	} while (!stop && !found);
-
-	return found;
+			return 0;
+		else if (!S_ISREG(statinfo.st_mode))
+			return 0;
+		else if (statinfo.st_uid == geteuid())
+			return statinfo.st_mode & S_IXUSR;
+		else if (statinfo.st_gid == getegid())
+			return statinfo.st_mode & S_IXGRP;
+		return statinfo.st_mode & S_IXOTH;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
@@ -348,7 +349,6 @@ void killAllChildProcess(pid_t ppid)
 	}
 	free(buff);
 	fclose(fp);
-	return 0;
 }
 
 void childSignalHandler(int signum)
