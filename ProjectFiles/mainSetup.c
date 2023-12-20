@@ -44,19 +44,19 @@ typedef bookmarks *pointBookmark;
 
 void setup(char inputBuffer[], char *args[], int *background);
 long pathFounder(const char *executable, char *Path, int testCondition);
-void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[]);
-void appendBM(pointBookmark *PointerB , char nameOfprog[]);
-void ListKillofStopped(ListProcessPtr *pointOfNow);
+void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition);
+void appendBM(pointBookmark *PointerB , char nameOfprog[], int testCondition);
+void ListKillofStopped(ListProcessPtr *pointOfNow, int testCondition);
 void childPkiller(pid_t ppid);
 void SignalofCh(int signum);
 void pointOfSigts();
-void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr);
-void reqOfBmark(char *args[], pointBookmark *startPtrBookmark);
-void reqOffindPrinter(char *fileName, char *Design);
-void printerOfFolder(char *pathOfStart, char *Design);
-void inputOfConfiguration(char *args[]);
-void reqOffind(char *args[]);
-long SwitchIOControl(char *args[]);
+void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr, int testCondition);
+void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition);
+void reqOffindPrinter(char *fileName, char *Design, int testCondition);
+void printerOfFolder(char *pathOfStart, char *Design, int testCondition);
+void inputOfConfiguration(char *args[], int testCondition);
+void reqOffind(char *args[], int testCondition);
+long SwitchIOControl(char *args[], int testCondition);
 int main(void);
 
 char inputFileName[20];
@@ -216,7 +216,7 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 	}
 }
 
-void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[])
+void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition
 {
 
 	ListProcessPtr newPtr = malloc(sizeof(ListProcess));
@@ -254,7 +254,7 @@ void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[])
 	}
 }
 
-void appendBM(pointBookmark *PointerB, char nameOfprog[])
+void appendBM(pointBookmark *PointerB, char nameOfprog[], int testCondition)
 {
 
 	pointBookmark newPtr = malloc(sizeof(bookmarks));
@@ -290,7 +290,7 @@ void appendBM(pointBookmark *PointerB, char nameOfprog[])
 	}
 }
 
-void ListKillofStopped(ListProcessPtr *pointOfNow)
+void ListKillofStopped(ListProcessPtr *pointOfNow, int testCondition)
 {
 	int status;
 
@@ -315,7 +315,7 @@ void ListKillofStopped(ListProcessPtr *pointOfNow)
 				ListProcessPtr delPtr = tempPtr;
 				previousPtr->pointNext = tempPtr->pointNext;
 				free(delPtr);
-				ListKillofStopped(pointOfNow);
+				ListKillofStopped(pointOfNow, 0);
 			}
 		}
 		else
@@ -323,7 +323,7 @@ void ListKillofStopped(ListProcessPtr *pointOfNow)
 			ListProcessPtr tempPtr = *pointOfNow;
 			*pointOfNow = (*pointOfNow)->pointNext;
 			free(tempPtr);
-			ListKillofStopped(pointOfNow);
+			ListKillofStopped(pointOfNow, 0);
 		}
 	}
 	else
@@ -375,7 +375,7 @@ void pointOfSigts()
 	fgProcessPid = 0;
 }
 
-void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr)
+void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr, int testCondition)
 {
 
 	pid_t childPid;
@@ -580,13 +580,13 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 		{
 			waitpid(childPid, NULL, WNOHANG);
 			setpgid(childPid, childPid);
-			append(&(*sPtr), childPid, args[0]);
+			append(&(*sPtr), childPid, args[0], 0);
 			noOfProc++;
 		}
 	}
 }
 
-void reqOfBmark(char *args[], pointBookmark *startPtrBookmark)
+void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition)
 {
 
 	char *tempStringComp = "\"";
@@ -813,7 +813,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark)
 			t++;
 		}
 		pid_t tempPid;
-		appendBM(startPtrBookmark, executable);
+		appendBM(startPtrBookmark, executable, 0);
 		executable[0] = '\0';
 	}
 	else
@@ -823,7 +823,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark)
 	}
 }
 
-void reqOffindPrinter(char *fileName, char *Design)
+void reqOffindPrinter(char *fileName, char *Design, int testCondition)
 {
 
 	char file[1000] = {0};
@@ -899,7 +899,7 @@ void reqOffindPrinter(char *fileName, char *Design)
 	fclose(fp2);
 }
 
-void printerOfFolder(char *pathOfStart, char *Design)
+void printerOfFolder(char *pathOfStart, char *Design, int testCondition)
 {
 	char path[1000];
 	struct dirent *dp;
@@ -923,12 +923,12 @@ void printerOfFolder(char *pathOfStart, char *Design)
 				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
 														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
 				{
-					reqOffindPrinter(grepFile, Design);
+					reqOffindPrinter(grepFile, Design, 0);
 				}
 				strcpy(path, pathOfStart);
 				strcat(path, "/");
 				strcat(path, dp->d_name);
-				printerOfFolder(path, Design);
+				printerOfFolder(path, Design, 0);
 			}
 		}
 		closedir(dir);
@@ -939,7 +939,7 @@ void printerOfFolder(char *pathOfStart, char *Design)
 	}
 }
 
-void reqOffind(char *args[])
+void reqOffind(char *args[], int testCondition)
 {
 	long i = 0;
 	for ( ; args[i] != NULL ; )
@@ -991,7 +991,7 @@ void reqOffind(char *args[])
 						return;
 					}
 
-					reqOffindPrinter(de->d_name, args[i - 1]);
+					reqOffindPrinter(de->d_name, args[i - 1], 0);
 				}
 			}
 		}
@@ -1004,7 +1004,7 @@ void reqOffind(char *args[])
 		char cwd[PATH_MAX];
 		if (getcwd(cwd, sizeof(cwd)) != NULL)
 		{
-			printerOfFolder(cwd, args[2]);
+			printerOfFolder(cwd, args[2], 0);
 		}
 		else
 		{
@@ -1013,7 +1013,7 @@ void reqOffind(char *args[])
 	}
 }
 
-void inputOfConfiguration(char *args[])
+void inputOfConfiguration(char *args[], int testCondition)
 {
 
 	long i = 0;
@@ -1050,7 +1050,7 @@ void inputOfConfiguration(char *args[])
 	}
 }
 
-long SwitchIOControl(char *args[])
+long SwitchIOControl(char *args[], int testCondition)
 {
 	if (numOfArgs == 2 && strcmp(args[0], "io") == 0 && strcmp(args[1], "-h") == 0)
 	{
@@ -1182,15 +1182,15 @@ int main(void)
 		progpath = strdup(args[0]);
 		executable = args[0];
 
-		if (SwitchIOControl(args) != 0)
+		if (SwitchIOControl(args, 0) != 0)
 		{
 			continue;
 		}
-		inputOfConfiguration(args);
+		inputOfConfiguration(args, 0);
 
 		if (strcmp(args[0], "exit") == 0)
 		{
-			ListKillofStopped(&startPtr);
+			ListKillofStopped(&startPtr, 0);
 			if ((startPtr == NULL) != 0)
 			{
 				exit(1);
@@ -1202,12 +1202,12 @@ int main(void)
 		}
 		else if (strcmp(args[0], "search") == 0)
 		{
-			reqOffind(args);
+			reqOffind(args, 0);
 			continue;
 		}
 		else if (strcmp(args[0], "bookmark") == 0)
 		{
-			reqOfBmark(args, &startPtrBookmark);
+			reqOfBmark(args, &startPtrBookmark, 0);
 			continue;
 		}
 		else if (!pathFounder(executable, path, 0))
@@ -1219,7 +1219,7 @@ int main(void)
 		{
 			if (*args[numOfArgs - 1] == '&')
 				args[numOfArgs - 1] = '\0';
-			ProcessOfconstract(path, args, &background, &startPtr);
+			ProcessOfconstract(path, args, &background, &startPtr, 0);
 		}
 		path[0] = '\0';
 		inputFileName[0] = '\0';
