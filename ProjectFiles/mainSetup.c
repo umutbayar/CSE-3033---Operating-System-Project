@@ -21,7 +21,7 @@
 #define ERROR_TWO_WAYS "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"
 #define ERROR_MEMORY "Did not use memory\n"
 #define EMPTY_LIST "Empty list\n"
-#define ERROR_BOOKMARK  "Bookmark usage wrong! "
+#define ERROR_BOOKMARK "Bookmark usage wrong! "
 struct listProcess
 {
 
@@ -45,7 +45,7 @@ typedef bookmarks *pointBookmark;
 void setup(char inputBuffer[], char *args[], int *background);
 long pathFounder(const char *executable, char *Path, int testCondition);
 void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition);
-void appendBM(pointBookmark *PointerB , char nameOfprog[], int testCondition);
+void appendBM(pointBookmark *PointerB, char nameOfprog[], int testCondition);
 void ListKillofStopped(ListProcessPtr *pointOfNow, int testCondition);
 void childPkiller(pid_t ppid);
 void SignalofCh(int signum);
@@ -189,7 +189,7 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 
 			if (!stop)
 				beg = end + 1;
-		} while(!stop && !found);
+		} while (!stop && !found);
 
 		return found;
 	}
@@ -216,41 +216,48 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 	}
 }
 
-void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition
+void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition)
 {
-
-	ListProcessPtr newPtr = malloc(sizeof(ListProcess));
-
-	if (newPtr == NULL)
+	int test = 0;
+	if (test == testCondition)
 	{
-		fprintf(stderr, "%s", ERROR_MEMORY);
-	}
-	else
-	{
-		strcpy(newPtr->nameOfprog, nameOfprog);
-		newPtr->noOfProc = noOfProc;
-		newPtr->pid = pid;
-		newPtr->pointNext = NULL;
+		ListProcessPtr newPtr = malloc(sizeof(ListProcess));
 
-		ListProcessPtr previousPtr = NULL;
-		ListProcessPtr pointOfNow = *sPtr;
-
-		for ( ; pointOfNow != NULL ; )
+		if (newPtr == NULL)
 		{
-			previousPtr = pointOfNow;
-			pointOfNow = pointOfNow->pointNext;
-		}
-
-		if (previousPtr != NULL)
-		{
-			previousPtr->pointNext = newPtr;
-			newPtr->pointNext = pointOfNow;
+			fprintf(stderr, "%s", ERROR_MEMORY);
 		}
 		else
 		{
-			newPtr->pointNext = *sPtr;
-			*sPtr = newPtr;
+			strcpy(newPtr->nameOfprog, nameOfprog);
+			newPtr->noOfProc = noOfProc;
+			newPtr->pid = pid;
+			newPtr->pointNext = NULL;
+
+			ListProcessPtr previousPtr = NULL;
+			ListProcessPtr pointOfNow = *sPtr;
+
+			for (; pointOfNow != NULL;)
+			{
+				previousPtr = pointOfNow;
+				pointOfNow = pointOfNow->pointNext;
+			}
+
+			if (previousPtr != NULL)
+			{
+				previousPtr->pointNext = newPtr;
+				newPtr->pointNext = pointOfNow;
+			}
+			else
+			{
+				newPtr->pointNext = *sPtr;
+				*sPtr = newPtr;
+			}
 		}
+	}
+	else
+	{
+		fprintf("Test condition not satisfaied!");
 	}
 }
 
@@ -271,7 +278,7 @@ void appendBM(pointBookmark *PointerB, char nameOfprog[], int testCondition)
 		pointBookmark previousPtr = NULL;
 		pointBookmark pointOfNow = *PointerB;
 
-		for ( ; pointOfNow != NULL ; )
+		for (; pointOfNow != NULL;)
 		{
 			previousPtr = pointOfNow;
 			pointOfNow = pointOfNow->pointNext;
@@ -302,7 +309,7 @@ void ListKillofStopped(ListProcessPtr *pointOfNow, int testCondition)
 			ListProcessPtr previousPtr = *pointOfNow;
 			ListProcessPtr tempPtr = (*pointOfNow)->pointNext;
 
-			for ( ; tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1 ; )
+			for (; tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1;)
 			{
 				previousPtr = tempPtr;
 				tempPtr = tempPtr->pointNext;
@@ -340,7 +347,7 @@ void childPkiller(pid_t ppid)
 
 	sprintf(command, "ps -ef|awk '$3==%u {print $2}'", ppid);
 	FILE *fp = (FILE *)popen(command, "r");
-	for ( ; getline(&buff, &len, fp) >= 0 ; )
+	for (; getline(&buff, &len, fp) >= 0;)
 	{
 		childPkiller(atoi(buff));
 		char cmd[256] = {0};
@@ -593,7 +600,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 	long arg2IsInt = 0;
 
 	long i = 0;
-	for ( ; args[i] != NULL ; )
+	for (; args[i] != NULL;)
 	{
 		i++;
 	}
@@ -603,7 +610,8 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 		char *temp = args[2];
 
 		long index = 0;
-		while (index < strlen(temp)) {
+		while (index < strlen(temp))
+		{
 			if (!isdigit(temp[index]))
 			{
 				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
@@ -611,7 +619,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 			}
 			index++;
 		}
-			
+
 		if (arg2IsInt == 1)
 		{
 			arg2IsInt = 0;
@@ -639,7 +647,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 					pointBookmark tempPtr = (*tempPointer)->pointNext;
 					long temp = 1;
 
-					for ( ; temp != index && tempPtr != NULL ; )
+					for (; temp != index && tempPtr != NULL;)
 					{
 						previousPtr = tempPtr;
 						tempPtr = tempPtr->pointNext;
@@ -686,7 +694,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 			{
 				pointBookmark tempPtr = *startPtrBookmark;
 				long j = 0;
-				for ( ; tempPtr != NULL && j != index ; )
+				for (; tempPtr != NULL && j != index;)
 				{
 					tempPtr = tempPtr->pointNext;
 					j++;
@@ -726,7 +734,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 
 		if (*startPtrBookmark != NULL)
 		{
-			for ( ; tempPointer->pointNext != NULL ; )
+			for (; tempPointer->pointNext != NULL;)
 			{
 				printf("%ld %s\n", count, tempPointer->nameOfprog);
 				count++;
@@ -736,7 +744,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 		}
 		else
 		{
-			fprintf(stderr, "%s",EMPTY_LIST);
+			fprintf(stderr, "%s", EMPTY_LIST);
 		}
 	}
 	else if ((strcmp(args[1], "-h") == 0) && i == 2)
@@ -760,7 +768,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 		}
 		else
 		{
-			fprintf(stderr, "%s",ERROR_BOOKMARK);
+			fprintf(stderr, "%s", ERROR_BOOKMARK);
 			return;
 		}
 
@@ -835,7 +843,7 @@ void reqOffindPrinter(char *fileName, char *Design, int testCondition)
 	sprintf(fName, "grep -rnwl  %s -e %s | awk '{print $0}'", fileName, Design);
 	FILE *fp = (FILE *)popen(fName, "r");
 
-	for ( ; getline(&buff, &len, fp) >= 0 ; )
+	for (; getline(&buff, &len, fp) >= 0;)
 	{
 		strcpy(file, buff);
 	}
@@ -856,7 +864,7 @@ void reqOffindPrinter(char *fileName, char *Design, int testCondition)
 	sprintf(command, "grep -rnw  %s -e %s | awk '{print $0}'", fileName, Design);
 
 	FILE *fp2 = (FILE *)popen(command, "r");
-	for ( ; fgets(result, sizeof(result), fp2) ; )
+	for (; fgets(result, sizeof(result), fp2);)
 	{
 		strcpy(allLine, result);
 
@@ -907,7 +915,7 @@ void printerOfFolder(char *pathOfStart, char *Design, int testCondition)
 
 	if (dir)
 	{
-		for ( ; (dp = readdir(dir)) != NULL ; )
+		for (; (dp = readdir(dir)) != NULL;)
 		{
 			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 			{
@@ -942,7 +950,7 @@ void printerOfFolder(char *pathOfStart, char *Design, int testCondition)
 void reqOffind(char *args[], int testCondition)
 {
 	long i = 0;
-	for ( ; args[i] != NULL ; )
+	for (; args[i] != NULL;)
 	{
 		i++;
 	}
@@ -971,7 +979,7 @@ void reqOffind(char *args[], int testCondition)
 			return;
 		}
 
-		for ( ; (de = readdir(dr)) != NULL ; )
+		for (; (de = readdir(dr)) != NULL;)
 		{
 			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
 			{
@@ -1093,10 +1101,11 @@ long SwitchIOControl(char *args[], int testCondition)
 	{
 		if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
-			if (i + 1 < numOfArgs) {
-
+			if (i + 1 < numOfArgs)
+			{
 			}
-			else {
+			else
+			{
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1110,10 +1119,11 @@ long SwitchIOControl(char *args[], int testCondition)
 		}
 		else if (strcmp(args[i], "<") == 0 && numOfArgs > 3 && strcmp(args[i + 2], ">") == 0)
 		{
-			if (i + 3 < numOfArgs) {
-
+			if (i + 3 < numOfArgs)
+			{
 			}
-			else {
+			else
+			{
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1129,10 +1139,11 @@ long SwitchIOControl(char *args[], int testCondition)
 		}
 		else if (strcmp(args[i], "<") == 0)
 		{
-			if (i + 1 < numOfArgs) {
-
+			if (i + 1 < numOfArgs)
+			{
 			}
-			else {
+			else
+			{
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
