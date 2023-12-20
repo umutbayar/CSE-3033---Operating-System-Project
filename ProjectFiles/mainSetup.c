@@ -257,7 +257,7 @@ void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testConditio
 	}
 	else
 	{
-		fprintf("Test condition not satisfaied!");
+		printf("Test condition not satisfaied!");
 	}
 }
 
