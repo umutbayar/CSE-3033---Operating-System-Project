@@ -770,15 +770,17 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		strcpy(firstArgument, args[1]);
 		long t = 0;
 
-		if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] != '\"') {
-for (t = 0; t < lengthOfFirstArgument - 1; t++)
+		if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] != '\"')
+		{
+			for (t = 0; t < lengthOfFirstArgument - 1; t++)
 			{
 				firstArgument[t] = firstArgument[t + 1];
 			}
 			firstArgument[lengthOfFirstArgument - 1] = '\0';
 		}
-		else if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] == '\"') {
-firstArgument[lengthOfFirstArgument - 1] = '\0';
+		else if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] == '\"')
+		{
+			firstArgument[lengthOfFirstArgument - 1] = '\0';
 
 			for (t = 0; t < lengthOfFirstArgument - 1; t++)
 			{
@@ -787,10 +789,11 @@ firstArgument[lengthOfFirstArgument - 1] = '\0';
 		}
 		exec = firstArgument;
 
-		if (findpathof(path, exec)) {
-
+		if (findpathof(path, exec))
+		{
 		}
-		else {
+		else
+		{
 			fprintf(stderr, "%s", "There is not such a command to store !\n");
 			return;
 		}
@@ -858,13 +861,15 @@ void printSearchCommand(char *fileName, char *pattern)
 
 		for (i = 0; i < length; i++)
 		{
-			if (isdigit(allLine[i]))
+			if (!isdigit(allLine[i]))
+			{
+				break;
+			}
+			else
 			{
 				lineNumber[i] = allLine[i];
 				digitNum++;
 			}
-			else
-				break;
 		}
 
 		for (i = 0; i < length; i++)
@@ -872,10 +877,7 @@ void printSearchCommand(char *fileName, char *pattern)
 			allLine[i] = allLine[digitNum + i];
 		}
 
-		if (strlen(file) < 1 || !isdigit(lineNumber[0]))
-		{
-		}
-		else
+		if (strlen(file) >= 1 && isdigit(lineNumber[0]))
 		{
 			file[strlen(file) - 1] = '\0';
 
