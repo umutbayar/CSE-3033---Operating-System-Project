@@ -61,7 +61,9 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);								 // Büyük Fonksiyon
 void printSearchCommand(char *fileName, char *pattern);											 // 2 yerde kullanılıyo
 void listFilesRecursively(char *basePath, char *pattern);										 // Recursion
-void processCommand(char *args[], int choice);													 // 3ü 1 arası bir fonsiyon ve mainde 2 yerde kullanılıyo
+void formatInput(char *args[]);
+void formatInput(char *args[]);
+void searchCommand(char *args[]);												 // 3ü 1 arası bir fonsiyon ve mainde 2 yerde kullanılıyo
 int checkIORedirection(char *args[]);															 // ???
 int main(void);																					 //----------------------------------------------------------------------
 
@@ -907,150 +909,149 @@ void listFilesRecursively(char *basePath, char *pattern)
 	closedir(dir);
 }
 
-// This function is for "search" command
-void processCommand(char *args[], int choice)
-{
-	if (choice)
-	{
-		bool valid = 0;
-		if (numOfArgs < 2 && args[0][0] != 'l' && args[0][0] != 'g')
-		{
-			fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
-			valid = 1;
-		}
-		else if (numOfArgs == 2)
-		{ // nonrecursive check
 
-			long length = strlen(args[1]);
-			char pattern[100];
-			strcpy(pattern, args[1]);
+int checkSearchArguments(char *args[]){
 
-			if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
-			{
-				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
-				valid = 1;
-			}
-		}
-		else if (numOfArgs == 3)
-		{ // recursive check
-			long length = strlen(args[2]);
-			char pattern[100];
-			strcpy(pattern, args[2]);
+	if(numOfArgs < 2){
+		fprintf(stderr, "%s", "Please check your arguments!!\n");
+		return 1;
 
-			if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
-			{
-				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
-				valid = 1;
-			}
+	}else if(numOfArgs == 2){ //nonrecursive check
 
-			if (strcmp(args[1], "-r") != 0)
-			{
-				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
-				valid = 1;
-			}
+		int length = strlen(args[1]);
+		char pattern[100];
+		strcpy(pattern,args[1]);
+
+
+		if(!(pattern[0] == '"' && pattern[length - 1] == '"')){
+			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
+			return 1;
 		}
 
-		if (valid)
-			return;
-		long i = 0;
-		while (args[i] != NULL)
-		{
-			i++;
+	}else if(numOfArgs == 3){ //recursive check
+		int length = strlen(args[2]);
+		char pattern[100];
+		strcpy(pattern,args[2]);
+
+
+		if(!(pattern[0] == '"' && pattern[length - 1] == '"')){
+			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
+			return 1;
 		}
 
-		if (i == 1)
-		{
+		if(strcmp(args[1],"-r") != 0){
+			fprintf(stderr, "%s", "Please check your arguments!!\n");
+			return 1;
 		}
-		else if (i == 2)
-		{
 
-			char cmd[1000];
-
-			// without -r option
-			// it will look all the files which ends .c .C .h .H under current directory and find the 'command' input word in this files
-			struct dirent *de; // Pointer for directory entry
-
-			// opendir() returns a pointer of DIR type.
-			DIR *dr = opendir(".");
-
-			if (dr == NULL)
-			{ // opendir returns NULL if couldn't open directory
-
-				fprintf(stderr, "%s", ERROR_OPEN_DIRECTORY);
-			}
-
-			/*
-			 *	Look all files under current directory and add find the files which endsWith .c .C .h .H , after finding call each of them and
-			 *   look if the files includes the 'pattern' which comes with argument of search commend
-			 */
-			while ((de = readdir(dr)) != NULL)
-			{
-
-				if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
-				{
-
-					char fName[50];
-
-					strcpy(fName, de->d_name);
-
-					if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
-															fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
-					{
-
-						printSearchCommand(de->d_name, args[1]);
-					}
-				}
-			}
-
-			printf("\n");
-			closedir(dr);
-		}
-		else if (i == 3 && strcmp(args[1], "-r") == 0)
-		{ // recursive part
-
-			char cwd[PATH_MAX];
-			if (getcwd(cwd, sizeof(cwd)) != NULL)
-			{
-
-				listFilesRecursively(cwd, args[2]);
-			}
-			else
-			{
-				fprintf(stderr, "%s", ERROR_GETCWD);
-			}
-		}
-		else
-		{
-			fprintf(stderr, "%s", ERROR_TWO_WAYS);
-		}
+	}else{
+		return 0;
 	}
-	else
-	{
-		long i = 0;
-		long a;
-		long counter;
-		long flag = 0;
-		for (i = 0; i < numOfArgs; i++)
-		{
-			if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
-			{
-				args[i] = NULL;
-				a = i;
-				counter = i + 1;
-				flag = 1;
-				break;
-			}
+
+	return 0;
+}
+
+void searchCommand(char *args[]){
+
+	if(checkSearchArguments(args) != 0) return;
+
+	int i=0; 
+	while(args[i] != NULL){
+		i++;
+	}
+	
+	if(i==2){
+
+		char cmd[1000];		
+
+		// without -r option 
+		// it will look all the files which ends .c .C .h .H under current directory and find the 'command' input word in this files
+
+
+	    struct dirent *de;  // Pointer for directory entry 
+	  
+	    // opendir() returns a pointer of DIR type.  
+	    DIR *dr = opendir("."); 
+	  
+	    if (dr == NULL){  // opendir returns NULL if couldn't open directory 
+
+	        fprintf(stderr, "%s", "Could not open current directory\n"); 
+
+	    } 
+	  
+	    /*
+		*	Look all files under current directory and add find the files which endsWith .c .C .h .H , after finding call each of them and  
+		*   look if the files includes the 'pattern' which comes with argument of search commend
+	    */
+	    while ((de = readdir(dr)) != NULL) {
+
+	    	if(strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0){
+
+				char fName[50];
+
+				strcpy(fName,de->d_name);
+
+
+	    		if(fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
+       	   		 fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H')){
+
+	    			printSearchCommand(de->d_name,args[1]);
+	    		}
+
+	    	}
+
+	    }
+	            
+	  	printf("\n");
+	    closedir(dr);     
+ 
+
+	}
+	else if(i==3 && strcmp(args[1],"-r")==0){ // recursive part 
+
+	    char cwd[PATH_MAX];
+		if (getcwd(cwd, sizeof(cwd)) != NULL) {
+
+		    listFilesRecursively(cwd,args[2]);
+		}
+		else {
+		    fprintf(stderr, "%s", "getcwd() error\n"); 
+
 		}
 
-		if (flag == 0)
-			return;
+	}
 
-		for (i = counter; i < numOfArgs; i++)
-		{
+	else{
+		fprintf(stderr, "%s", "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"); 
+
+	}
+
+}
+
+void formatInput(char *args[]){
+
+	int i = 0;
+	int a;
+	int counter;
+	int flag = 0;
+	for(i = 0; i < numOfArgs; i++){
+		if(strcmp(args[i],"<")== 0 || strcmp(args[i],">")== 0 || strcmp(args[i],">>")== 0 || strcmp(args[i],"2>")== 0 || strcmp(args[i],"2>>")== 0){
 			args[i] = NULL;
+			a = i;
+			counter = i+1;
+			flag = 1;
+			break;
 		}
-		numOfArgs = numOfArgs - (numOfArgs - a); // Update number of arguments
 	}
+
+	if(flag == 0) return; //Eger komutun io ile ilgisi yoksa direkt return
+	
+
+	for(i = counter; i < numOfArgs; i++){ 
+		args[i] = NULL;
+	}
+
+	numOfArgs = numOfArgs - (numOfArgs-a); // Update number of arguments
 }
 
 // If input includes IO operation, then this method will return 0. Otherwise 1
@@ -1187,7 +1188,7 @@ int main(void)
 		{ // Eger ıo yazımında vs hata varsa error verip yeniden input almalı
 			continue;
 		}
-		processCommand(args, 1);
+		formatInput(args);
 
 		if (strcmp(args[0], "exit") == 0)
 		{
@@ -1203,7 +1204,7 @@ int main(void)
 		}
 		else if (strcmp(args[0], "search") == 0)
 		{
-			processCommand(args, 0);
+			searchCommand(args);
 			continue;
 		}
 		else if (strcmp(args[0], "bookmark") == 0)
