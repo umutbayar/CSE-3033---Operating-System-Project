@@ -229,7 +229,11 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 
 	ListProcessPtr newPtr = malloc(sizeof(ListProcess));
 
-	if (newPtr != NULL)
+	if (newPtr == NULL)
+	{
+		fprintf(stderr, "%s", "No memory available\n");
+	}
+	else
 	{
 		strcpy(newPtr->progName, progName);
 		newPtr->processNumber = processNumber;
@@ -245,20 +249,16 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 			currentPtr = currentPtr->nextPtr;
 		}
 
-		if (previousPtr == NULL)
-		{
-			newPtr->nextPtr = *sPtr;
-			*sPtr = newPtr;
-		}
-		else
+		if (previousPtr != NULL)
 		{
 			previousPtr->nextPtr = newPtr;
 			newPtr->nextPtr = currentPtr;
 		}
-	}
-	else
-	{
-		fprintf(stderr, "%s", "No memory available\n");
+		else
+		{
+			newPtr->nextPtr = *sPtr;
+			*sPtr = newPtr;
+		}
 	}
 }
 
