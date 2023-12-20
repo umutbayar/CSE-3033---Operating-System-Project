@@ -187,7 +187,7 @@ long findpathof(char *pth, const char *exe)
 
 			if (!stop)
 				beg = end + 1;
-		} for ( ; !stop && !found ; );
+		} while(!stop && !found);
 
 		return found;
 	}
