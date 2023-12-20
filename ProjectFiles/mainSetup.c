@@ -615,45 +615,71 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 	}
 
-	if (i == 1)
-	{
-		fprintf(stderr, "Wrong usage of Bookmark! You can type \"bookmark -h\" to see the correct usage.\n");
-		return;
-	}
-	else if ((strcmp(args[1], "-h") == 0) && i == 2)
-	{
-		printf("try again");
-		return;
-	}
-	else if ((strcmp(args[1], "-l") == 0) && i == 2)
+	if ((strcmp(args[1], "-d") == 0) && i == 3)
 	{
 
-		long count = 0;
-		bookmarkPtr tempPointer = *startPtrBookmark;
-		if (*startPtrBookmark == NULL)
-			fprintf(stderr, "%s", "List is empty\n");
+		if (arg2IsInt != 0)
+		{
+			return;
+		}
 		else
 		{
-			while (tempPointer->nextPtr != NULL)
+			bookmarkPtr *tempPointer = startPtrBookmark;
+			long index = atoi(args[2]);
+
+			if (*tempPointer != NULL)
 			{
-				printf("%ld %s\n", count, tempPointer->progName);
-				count++;
-				tempPointer = tempPointer->nextPtr;
+
+				if (index != 0)
+				{
+					bookmarkPtr previousPtr = *tempPointer;
+					bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
+					long temp = 1;
+
+					while (temp != index && tempPtr != NULL)
+					{
+						previousPtr = tempPtr;
+						tempPtr = tempPtr->nextPtr;
+						temp++;
+					}
+					if (tempPtr != NULL)
+					{
+						bookmarkPtr delPtr = tempPtr;
+						previousPtr->nextPtr = tempPtr->nextPtr;
+						free(delPtr);
+					}
+					else
+					{
+						fprintf(stderr, "%s", "There is no bookmark with this index.\n");
+					}
+				}
+				else
+				{
+					bookmarkPtr tempPtr = *tempPointer;
+					*tempPointer = (*tempPointer)->nextPtr;
+					free(tempPtr);
+				}
 			}
-			printf("%ld %s\n", count, tempPointer->progName);
+			else
+			{
+				fprintf(stderr, "%s", "List is empty\n");
+			}
+			return;
 		}
 	}
 	else if ((strcmp(args[1], "-i") == 0) && i == 3)
 	{
 
-		if (arg2IsInt == 0)
+		if (arg2IsInt != 0)
+		{
+			return;
+		}
+		else
 		{
 			long index = atoi(args[2]);
 			char *progpath;
 
-			if (*startPtrBookmark == NULL)
-				fprintf(stderr, "%s", "List is empty\n");
-			else
+			if (*startPtrBookmark != NULL)
 			{
 				bookmarkPtr tempPtr = *startPtrBookmark;
 				long j = 0;
@@ -662,11 +688,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 					tempPtr = tempPtr->nextPtr;
 					j++;
 				}
-				if (tempPtr == NULL)
-				{
-					fprintf(stderr, "%s", "There is no bookmark in this index.\n");
-				}
-				else
+				if (tempPtr != NULL)
 				{
 					char exe[90];
 					strcpy(exe, tempPtr->progName);
@@ -681,62 +703,48 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 					sprintf(command, "%s", exe);
 					system(command);
 				}
+				else
+				{
+					fprintf(stderr, "%s", "There is no bookmark in this index.\n");
+				}
 			}
-			return;
-		}
-		else
-		{
+			else
+			{
+				fprintf(stderr, "%s", "List is empty\n");
+			}
 			return;
 		}
 	}
-	else if ((strcmp(args[1], "-d") == 0) && i == 3)
+	else if ((strcmp(args[1], "-l") == 0) && i == 2)
 	{
 
-		if (arg2IsInt == 0)
+		long count = 0;
+		bookmarkPtr tempPointer = *startPtrBookmark;
+
+		if (*startPtrBookmark != NULL)
 		{
-			bookmarkPtr *tempPointer = startPtrBookmark;
-			long index = atoi(args[2]);
-
-			if (*tempPointer == NULL)
-				fprintf(stderr, "%s", "List is empty\n");
-			else
+			while (tempPointer->nextPtr != NULL)
 			{
-
-				if (index == 0)
-				{
-					bookmarkPtr tempPtr = *tempPointer;
-					*tempPointer = (*tempPointer)->nextPtr;
-					free(tempPtr);
-				}
-				else
-				{
-					bookmarkPtr previousPtr = *tempPointer;
-					bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
-					long temp = 1;
-
-					while (temp != index && tempPtr != NULL)
-					{
-						previousPtr = tempPtr;
-						tempPtr = tempPtr->nextPtr;
-						temp++;
-					}
-					if (tempPtr == NULL)
-						fprintf(stderr, "%s", "There is no bookmark with this index.\n");
-					else
-					{
-
-						bookmarkPtr delPtr = tempPtr;
-						previousPtr->nextPtr = tempPtr->nextPtr;
-						free(delPtr);
-					}
-				}
+				printf("%ld %s\n", count, tempPointer->progName);
+				count++;
+				tempPointer = tempPointer->nextPtr;
 			}
-			return;
+			printf("%ld %s\n", count, tempPointer->progName);
 		}
 		else
 		{
-			return;
+			fprintf(stderr, "%s", "List is empty\n");
 		}
+	}
+	else if ((strcmp(args[1], "-h") == 0) && i == 2)
+	{
+		printf("try again");
+		return;
+	}
+	else if (i == 1)
+	{
+		fprintf(stderr, "Wrong usage of Bookmark! You can type \"bookmark -h\" to see the correct usage.\n");
+		return;
 	}
 	else if (strlen(args[1]) < strlen(tempStringComp) ? 0 : memcmp(tempStringComp, args[1], strlen(tempStringComp)) == 0)
 	{
@@ -745,7 +753,10 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		char command[100];
 		strcpy(command, args[numOfArgs - 1]);
 
-		if (command[length - 1] != '\"')
+		if (command[length - 1] == '\"')
+		{
+		}
+		else
 		{
 			fprintf(stderr, "%s", "Wrong usage of Bookmark! ");
 			return;
@@ -759,29 +770,27 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		strcpy(firstArgument, args[1]);
 		long t = 0;
 
-		if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] == '\"')
-		{
-
-			firstArgument[lengthOfFirstArgument - 1] = '\0';
-
-			for (t = 0; t < lengthOfFirstArgument - 1; t++)
+		if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] != '\"') {
+for (t = 0; t < lengthOfFirstArgument - 1; t++)
 			{
 				firstArgument[t] = firstArgument[t + 1];
 			}
+			firstArgument[lengthOfFirstArgument - 1] = '\0';
 		}
-		else if (firstArgument[0] == '\"')
-		{
+		else if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] == '\"') {
+firstArgument[lengthOfFirstArgument - 1] = '\0';
 
 			for (t = 0; t < lengthOfFirstArgument - 1; t++)
 			{
 				firstArgument[t] = firstArgument[t + 1];
 			}
-			firstArgument[lengthOfFirstArgument - 1] = '\0';
 		}
 		exec = firstArgument;
 
-		if (!findpathof(path, exec))
-		{
+		if (findpathof(path, exec)) {
+
+		}
+		else {
 			fprintf(stderr, "%s", "There is not such a command to store !\n");
 			return;
 		}
@@ -1000,7 +1009,7 @@ void formatInput(char *args[])
 	long flag = 0;
 	for (i = 0; i < numOfArgs; i++)
 	{
-		if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0 || strcmp(args[i], "2>>") == 0)
+		if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
 			args[i] = NULL;
 			a = i;
@@ -1036,7 +1045,7 @@ long checkIORedirection(char *args[])
 	long io;
 	for (a = 0; a < numOfArgs; a++)
 	{
-		if (strcmp(args[a], "<") == 0 || strcmp(args[a], ">") == 0 || strcmp(args[a], ">>") == 0 || strcmp(args[a], "2>") == 0 || strcmp(args[a], "2>>") == 0)
+		if (strcmp(args[a], "<") == 0 || strcmp(args[a], ">") == 0 || strcmp(args[a], ">>") == 0 || strcmp(args[a], "2>") == 0)
 		{
 			io = 1;
 		}
@@ -1075,7 +1084,7 @@ long checkIORedirection(char *args[])
 
 			return 0;
 		}
-		else if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0 || strcmp(args[i], "2>>") == 0)
+		else if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
 			if (i + 1 >= numOfArgs)
 			{
