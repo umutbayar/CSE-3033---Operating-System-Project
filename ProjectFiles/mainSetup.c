@@ -40,14 +40,6 @@ struct bookmark
 typedef struct bookmark bookmarks;
 typedef bookmarks *bookmarkPtr;
 
-struct history
-{
-	char inputArgs[90];
-	struct history *previousPtr;
-	struct history *nextPtr;
-};
-typedef struct history History;
-typedef History *HistoryPtr;
 
 void setup(char inputBuffer[], char *args[], int *background);
 long findpathof(char *pth, const char *exe);
@@ -870,122 +862,67 @@ void listFilesRecursively(char *basePath, char *pattern)
 	closedir(dir);
 }
 
-long checkSearchArguments(char *args[])
-{
+void searchCommand(char *args[]) {
+    long i = 0;
+    while (args[i] != NULL) {
+        i++;
+    }
 
-	if (numOfArgs < 2)
-	{
-		fprintf(stderr, "%s", "Please check your arguments!!\n");
-		return 1;
-	}
-	else if (numOfArgs == 2)
-	{
+    if (i < 2 || i > 3) {
+        fprintf(stderr, "2 ways to use this command:\nsearch 'command'\nsearch 'option' 'command'\n");
+        return;
+    }
 
-		long length = strlen(args[1]);
-		char pattern[100];
-		strcpy(pattern, args[1]);
+    if (i == 3 && strcmp(args[1], "-r") != 0) {
+        fprintf(stderr, "Please check your arguments!!\n");
+        return;
+    }
 
-		if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
-		{
-			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
-			return 1;
-		}
-	}
-	else if (numOfArgs == 3)
-	{
-		long length = strlen(args[2]);
-		char pattern[100];
-		strcpy(pattern, args[2]);
+    if (i == 2 || (i == 3 && strcmp(args[1], "-r") == 0)) {
+        char cmd[1000];
+        struct dirent *de;
+        DIR *dr = opendir(".");
 
-		if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
-		{
-			fprintf(stderr, "%s", "Please check your arguments!! You need to give your pattern between \" \" \n");
-			return 1;
-		}
+        if (dr == NULL) {
+            fprintf(stderr, "Could not open current directory\n");
+            return;
+        }
 
-		if (strcmp(args[1], "-r") != 0)
-		{
-			fprintf(stderr, "%s", "Please check your arguments!!\n");
-			return 1;
-		}
-	}
-	else
-	{
-		return 0;
-	}
+        while ((de = readdir(dr)) != NULL) {
+            if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0) {
+                char fName[50];
+                strcpy(fName, de->d_name);
 
-	return 0;
+                if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
+                                                        fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H')) {
+                    long length = strlen(args[i - 1]);
+                    char pattern[100];
+                    strcpy(pattern, args[i - 1]);
+
+                    if (!(pattern[0] == '"' && pattern[length - 1] == '"')) {
+                        fprintf(stderr, "Please check your arguments!! You need to give your pattern between \" \"\n");
+                        closedir(dr);
+                        return;
+                    }
+
+                    printSearchCommand(de->d_name, args[i - 1]);
+                }
+            }
+        }
+
+        printf("\n");
+        closedir(dr);
+    } else {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof(cwd)) != NULL) {
+            listFilesRecursively(cwd, args[2]);
+        } else {
+            fprintf(stderr, "getcwd() error\n");
+        }
+    }
 }
 
-void searchCommand(char *args[])
-{
 
-	if (checkSearchArguments(args) != 0)
-		return;
-
-	long i = 0;
-	while (args[i] != NULL)
-	{
-		i++;
-	}
-
-	if (i == 2)
-	{
-
-		char cmd[1000];
-
-		struct dirent *de;
-
-		DIR *dr = opendir(".");
-
-		if (dr == NULL)
-		{
-
-			fprintf(stderr, "%s", "Could not open current directory\n");
-		}
-
-		while ((de = readdir(dr)) != NULL)
-		{
-
-			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
-			{
-
-				char fName[50];
-
-				strcpy(fName, de->d_name);
-
-				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
-														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
-				{
-
-					printSearchCommand(de->d_name, args[1]);
-				}
-			}
-		}
-
-		printf("\n");
-		closedir(dr);
-	}
-	else if (i == 3 && strcmp(args[1], "-r") == 0)
-	{
-
-		char cwd[PATH_MAX];
-		if (getcwd(cwd, sizeof(cwd)) != NULL)
-		{
-
-			listFilesRecursively(cwd, args[2]);
-		}
-		else
-		{
-			fprintf(stderr, "%s", "getcwd() error\n");
-		}
-	}
-
-	else
-	{
-		fprintf(stderr, "%s", "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n");
-	}
-}
 
 void formatInput(char *args[])
 {
@@ -1122,8 +1059,6 @@ int main(void)
 
 	ListProcessPtr startPtr = NULL;
 	bookmarkPtr startPtrBookmark = NULL;
-	HistoryPtr headHistory = NULL;
-	HistoryPtr tailHistory = NULL;
 
 	while (parentPid == getpid())
 	{
