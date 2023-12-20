@@ -267,7 +267,11 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 
 	bookmarkPtr newPtr = malloc(sizeof(bookmarks));
 
-	if (newPtr != NULL)
+	if (newPtr == NULL)
+	{
+		fprintf(stderr, "%s", "No memory available\n");
+	}
+	else
 	{
 		strcpy(newPtr->progName, progName);
 		newPtr->nextPtr = NULL;
@@ -281,20 +285,16 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 			currentPtr = currentPtr->nextPtr;
 		}
 
-		if (previousPtr == NULL)
-		{
-			newPtr->nextPtr = *bPtr;
-			*bPtr = newPtr;
-		}
-		else
+		if (previousPtr != NULL)
 		{
 			previousPtr->nextPtr = newPtr;
 			newPtr->nextPtr = currentPtr;
 		}
-	}
-	else
-	{
-		fprintf(stderr, "%s", "No memory available\n");
+		else
+		{
+			newPtr->nextPtr = *bPtr;
+			*bPtr = newPtr;
+		}
 	}
 }
 
