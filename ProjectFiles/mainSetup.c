@@ -137,6 +137,14 @@ void setup(char inputBuffer[], char *args[], int *background)
 	numOfArgs = ct;
 }
 
+/*
+ * Searches for the given executable in the PATH environment variable or using the
+ * given absolute path. Checks if the file is executable based on user's permissions.
+ * executable: The name of the executable file or an absolute path.
+ * Path: A buffer to store the full path of the found executable.
+ * testCondition: A condition to check before performing the search. If not satisfied,the function prints an error message and exits.
+ * Returns: 1 if the executable is found and is executable, 0 otherwise.
+ */
 long pathFounder(const char *executable, char *Path, int testCondition)
 {
 	int test = 0;
@@ -200,7 +208,7 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 
 			return found;
 		}
-
+// If the executable contains '/', use the absolute path
 		if (realpath(executable, Path) != NULL)
 		{
 			long result;
@@ -227,7 +235,13 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Appends a new process node to the end of the linked list.
+ * sPtr: A pointer to the head of the linked list.
+ * pid: Process ID to be stored in the new node.
+ * nameOfprog: Name of the program associated with the process.
+ * testCondition: A condition to check before appending. If not satisfied,the function prints an error message and exits.
+ */
 void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition)
 {
 	int test = 0;
@@ -272,7 +286,12 @@ void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testConditio
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Appends a new bookmark node to the end of the linked list.
+ * PointerB: A pointer to the head of the linked list of bookmarks.
+ * nameOfprog: Name of the program associated with the bookmark.
+ * testCondition: A condition to check before appending. If not satisfied,the function prints an error message and exits.
+ */
 void appendBM(pointBookmark *PointerB, char nameOfprog[], int testCondition)
 {
     int i;
@@ -318,7 +337,11 @@ void appendBM(pointBookmark *PointerB, char nameOfprog[], int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Removes and deallocates memory for the processes that have stopped from the linked list.
+ * pointOfNow: A pointer to the pointer of the start of the linked list of processes.
+ * testCondition: The condition to check before processing the list.
+ */
 void ListKillofStopped(ListProcessPtr *pointOfNow, int testCondition)
 {
 	int test = 0;
@@ -368,7 +391,11 @@ void ListKillofStopped(ListProcessPtr *pointOfNow, int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Removes stopped processes from the linked list.
+ * pointOfNow: A pointer to the head of the linked list of processes.
+ * testCondition: A condition to check before removing processes. If not satisfied,the function prints an error message and exits.
+ */
 void childPkiller(pid_t ppid)
 {
 	char *buff = NULL;
@@ -387,14 +414,23 @@ void childPkiller(pid_t ppid)
 	free(buff);
 	fclose(fp);
 }
-
+/*
+ * Signal handler for child processes. It waits for any child process to
+ * change state (WNOHANG) and updates its status.
+ * signum: The signal number that triggered the handler (unused).
+ */
 void SignalofCh(int signum)
 {
 	int status;
 	pid_t pid;
 	pid = waitpid(-1, &status, WNOHANG);
 }
-
+/*
+ * Function: pointOfSigts
+ * Updates the foreground process status and prints the shell prompt.
+ * If the foreground process is still running, it sends a stop signal (SIGTSTP)
+ * to pause the process.
+ */
 void pointOfSigts()
 {
 
@@ -411,7 +447,15 @@ void pointOfSigts()
 	system(cmd);
 	fgProcessPid = 0;
 }
-
+/*
+ * Creates a new process using fork(). Handles input and output redirection,
+ * executes the specified command, and manages foreground or background execution.
+ * path: The path to the executable.
+ * args: An array of arguments for the executable.
+ * background: A flag indicating whether the process should run in the background.
+ * sPtr: Pointer to the linked list of processes.
+ * testCondition: A test condition for conditional execution (unused in the current implementation).
+ */
 void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr, int testCondition)
 {
 	int test = 0;
@@ -629,7 +673,10 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Performs memory-related operations including printing random numbers, allocating and freeing dynamic memory,
+ * and creating and closing a file.
+ */
 void memoryCheckUp()
 {
 	int i, j;
@@ -649,7 +696,12 @@ void memoryCheckUp()
 		fclose(file);
 	}
 }
-
+/*
+ * Processes bookmark-related commands based on the provided arguments.
+ * args: An array of arguments for bookmark-related commands.
+ * startPtrBookmark: Pointer to the start of the bookmark linked list.
+ * testCondition: A test condition for conditional execution (unused in the current implementation).
+ */
 void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition)
 {
 	int test = 0;
@@ -894,7 +946,12 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Searches for occurrences of a specified design (pattern) in files matching the given file name.
+ * fileName: The name of the file or directory to search.
+ * Design: The pattern to search for in the specified file or directory.
+ * testCondition: The condition to check before executing the search.
+ */
 void reqOffindPrinter(char *fileName, char *Design, int testCondition)
 {
 	int test = 0;
@@ -977,7 +1034,12 @@ void reqOffindPrinter(char *fileName, char *Design, int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Recursively searches for occurrences of a specified design (pattern) in files within the specified directory.
+ * pathOfStart: The path of the directory to start the search.
+ * Design: The pattern to search for in the files within the directory.
+ * testCondition: The condition to check before executing the search.
+ */
 void printerOfFolder(char *pathOfStart, char *Design, int testCondition)
 {
 	int test = 0;
@@ -1025,7 +1087,11 @@ void printerOfFolder(char *pathOfStart, char *Design, int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Searches for occurrences of a specified design (pattern) in files within the current directory or recursively in subdirectories.
+ * args: An array of arguments passed to the function, including the design to search for and optional flags.
+ * testCondition: The condition to check before executing the search.
+ */
 void reqOffind(char *args[], int testCondition)
 {
 	int test = 0;
@@ -1107,7 +1173,11 @@ void reqOffind(char *args[], int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Modifies the command line arguments to handle input/output redirection by setting appropriate elements to NULL.
+ * args: An array of arguments passed to the function, representing the command line arguments.
+ * testCondition: The condition to check before modifying the arguments.
+ */
 void inputOfConfiguration(char *args[], int testCondition)
 {
 	int test = 0;
@@ -1151,7 +1221,14 @@ void inputOfConfiguration(char *args[], int testCondition)
 		printf("Test condition not satisfaied!");
 	}
 }
-
+/*
+ * Handles input/output redirection based on the given command line arguments.
+ * args: An array of arguments passed to the function, representing the command line arguments.
+ * testCondition: The condition to check before processing the arguments.
+ * Returns:
+ *    0: Successful processing of IO redirection.
+ *    1: Syntax error or invalid IO redirection for the given command.
+ */
 long SwitchIOControl(char *args[], int testCondition)
 {
 	int test = 0;
