@@ -600,9 +600,8 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 		char *temp = args[2];
 
-		long length, index;
-		length = strlen(temp);
-		for (index = 0; index < length; index++)
+		long index;
+		for (index = 0; index < strlen(temp); index++)
 			if (!isdigit(temp[index]))
 			{
 				fprintf(stderr, "%s", "Please check your arguments !\n");
@@ -691,10 +690,9 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 				{
 					char exe[90];
 					strcpy(exe, tempPtr->progName);
-					long length = strlen(exe);
 					long i = 0;
-					exe[length - 2] = '\0';
-					for (i = 0; i < length; i++)
+					exe[strlen(exe) - 2] = '\0';
+					for (i = 0; i < strlen(exe); i++)
 					{
 						exe[i] = exe[i + 1];
 					}
@@ -748,11 +746,10 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	else if (strlen(args[1]) < strlen(tempStringComp) ? 0 : memcmp(tempStringComp, args[1], strlen(tempStringComp)) == 0)
 	{
 
-		long length = strlen(args[numOfArgs - 1]);
 		char command[100];
 		strcpy(command, args[numOfArgs - 1]);
 
-		if (command[length - 1] == '\"')
+		if (command[strlen(args[numOfArgs - 1]) - 1] == '\"')
 		{
 		}
 		else
@@ -854,11 +851,9 @@ void printSearchCommand(char *fileName, char *pattern)
 		char lineNumber[15] = {0};
 
 		long i = 0;
-
-		long length = strlen(allLine);
 		long digitNum = 1;
 
-		for (i = 0; i < length; i++)
+		for (i = 0; i < strlen(allLine); i++)
 		{
 			if (!isdigit(allLine[i]))
 			{
@@ -871,7 +866,7 @@ void printSearchCommand(char *fileName, char *pattern)
 			}
 		}
 
-		for (i = 0; i < length; i++)
+		for (i = 0; i < strlen(allLine); i++)
 		{
 			allLine[i] = allLine[digitNum + i];
 		}
@@ -971,11 +966,10 @@ void searchCommand(char *args[])
 				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
 														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
 				{
-					long length = strlen(args[i - 1]);
 					char pattern[100];
 					strcpy(pattern, args[i - 1]);
 
-					if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
+					if (!(pattern[0] == '"' && pattern[strlen(args[i - 1]) - 1] == '"'))
 					{
 						fprintf(stderr, "Please check your arguments!! You need to give your pattern between \" \"\n");
 						closedir(dr);
