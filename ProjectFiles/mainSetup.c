@@ -896,10 +896,8 @@ void listFilesRecursively(char *basePath, char *pattern)
 	struct dirent *dp;
 	DIR *dir = opendir(basePath);
 
-	if (!dir)
-		return;
-
-	while ((dp = readdir(dir)) != NULL)
+	if (dir) {
+		while ((dp = readdir(dir)) != NULL)
 	{
 		if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 		{
@@ -923,8 +921,11 @@ void listFilesRecursively(char *basePath, char *pattern)
 			listFilesRecursively(path, pattern);
 		}
 	}
-
 	closedir(dir);
+	}
+	else {
+		return;
+	}
 }
 
 void searchCommand(char *args[])
