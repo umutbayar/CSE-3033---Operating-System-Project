@@ -53,12 +53,11 @@ typedef History *HistoryPtr;
 void setup(char inputBuffer[], char *args[], int *background);									 //----------------------------------------------------------------------
 int findpathof(char *pth, const char *exe);														 //-----------------------------------------------
 void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice); //-----------------------------------------------
-void deleteStoppedList(ListProcessPtr *currentPtr);												 //  Recursion
-void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr);
-int killAllChildProcess(pid_t ppid);
-void childSignalHandler(int signum);
-void sigtstpHandler();
-void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
+void deleteStoppedList(ListProcessPtr *currentPtr);												 // Recursion
+int killAllChildProcess(pid_t ppid);															 // Recursion
+void childSignalHandler(int signum);															 // Elleşme
+void sigtstpHandler();																			 // Elleşme
+void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);			 // Ana Fonksiyon gibi birşey
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
@@ -349,47 +348,6 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 	}
 }
 
-// This function is for running the corresponding index from bookmark list.
-void runBookmarkIndex(char *charindex, bookmarkPtr currentPtr)
-{
-
-	long index = atoi(charindex);
-	char *progpath;
-
-	if (currentPtr == NULL)
-		fprintf(stderr, "%s", "List is empty\n");
-	else
-	{
-		bookmarkPtr tempPtr = currentPtr;
-		long j = 0;
-		while (tempPtr != NULL && j != index)
-		{
-			tempPtr = tempPtr->nextPtr;
-			j++;
-		}
-		if (tempPtr == NULL)
-		{
-			fprintf(stderr, "%s", "There is no bookmark in this index.\n");
-		}
-		else
-		{
-
-			char exe[90];
-			strcpy(exe, tempPtr->progName);
-			int length = strlen(exe);
-			int i = 0;
-			exe[length - 2] = '\0';
-			for (i = 0; i < length; i++)
-			{
-				exe[i] = exe[i + 1];
-			}
-			char command[100];
-			sprintf(command, "%s", exe);
-			system(command);
-		}
-	}
-}
-
 // This function is for killing all the sub childs of our foreground process
 int killAllChildProcess(pid_t ppid)
 {
@@ -665,40 +623,40 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 		if (arg2IsInt == 0)
 		{
-				long index = atoi(args[2]);
-				char *progpath;
+			long index = atoi(args[2]);
+			char *progpath;
 
-				if (*startPtrBookmark == NULL)
-					fprintf(stderr, "%s", "List is empty\n");
+			if (*startPtrBookmark == NULL)
+				fprintf(stderr, "%s", "List is empty\n");
+			else
+			{
+				bookmarkPtr tempPtr = *startPtrBookmark;
+				long j = 0;
+				while (tempPtr != NULL && j != index)
+				{
+					tempPtr = tempPtr->nextPtr;
+					j++;
+				}
+				if (tempPtr == NULL)
+				{
+					fprintf(stderr, "%s", "There is no bookmark in this index.\n");
+				}
 				else
 				{
-					bookmarkPtr tempPtr = *startPtrBookmark;
-					long j = 0;
-					while (tempPtr != NULL && j != index)
+					char exe[90];
+					strcpy(exe, tempPtr->progName);
+					int length = strlen(exe);
+					int i = 0;
+					exe[length - 2] = '\0';
+					for (i = 0; i < length; i++)
 					{
-						tempPtr = tempPtr->nextPtr;
-						j++;
+						exe[i] = exe[i + 1];
 					}
-					if (tempPtr == NULL)
-					{
-						fprintf(stderr, "%s", "There is no bookmark in this index.\n");
-					}
-					else
-					{
-						char exe[90];
-						strcpy(exe, tempPtr->progName);
-						int length = strlen(exe);
-						int i = 0;
-						exe[length - 2] = '\0';
-						for (i = 0; i < length; i++)
-						{
-							exe[i] = exe[i + 1];
-						}
-						char command[100];
-						sprintf(command, "%s", exe);
-						system(command);
-					}
+					char command[100];
+					sprintf(command, "%s", exe);
+					system(command);
 				}
+			}
 			return;
 		}
 		else
