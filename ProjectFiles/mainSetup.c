@@ -626,7 +626,6 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 void memoryCheckUp()
 {
 	int i, j;
-	srand((unsigned int)time(NULL));
 	for (i = 0; i < 5; i++)
 	{
 		for (j = 0; j < 5; j++)
