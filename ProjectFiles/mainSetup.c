@@ -623,6 +623,27 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 	}
 }
 
+void memoryCheckUp()
+{
+	int i, j;
+	srand((unsigned int)time(NULL));
+	for (i = 0; i < 5; i++)
+	{
+		for (j = 0; j < 5; j++)
+		{
+			printf("%d ", rand() % 100);
+		}
+		printf("\n");
+	}
+	int *dynamicArray = (int *)malloc(10 * sizeof(int));
+	free(dynamicArray);
+	FILE *file = fopen("file.txt", "w");
+	if (file != NULL)
+	{
+		fclose(file);
+	}
+}
+
 void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition)
 {
 	int test = 0;
