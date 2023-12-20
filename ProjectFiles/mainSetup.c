@@ -187,7 +187,7 @@ long findpathof(char *pth, const char *exe)
 
 			if (!stop)
 				beg = end + 1;
-		} while (!stop && !found);
+		} while(!stop && !found);
 
 		return found;
 	}
@@ -233,7 +233,7 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 		ListProcessPtr previousPtr = NULL;
 		ListProcessPtr currentPtr = *sPtr;
 
-		while (currentPtr != NULL)
+		for ( ; currentPtr != NULL ; )
 		{
 			previousPtr = currentPtr;
 			currentPtr = currentPtr->nextPtr;
@@ -269,7 +269,7 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 		bookmarkPtr previousPtr = NULL;
 		bookmarkPtr currentPtr = *bPtr;
 
-		while (currentPtr != NULL)
+		for ( ; currentPtr != NULL ; )
 		{
 			previousPtr = currentPtr;
 			currentPtr = currentPtr->nextPtr;
@@ -300,7 +300,7 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 			ListProcessPtr previousPtr = *currentPtr;
 			ListProcessPtr tempPtr = (*currentPtr)->nextPtr;
 
-			while (tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1)
+			for ( ; tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1 ; )
 			{
 				previousPtr = tempPtr;
 				tempPtr = tempPtr->nextPtr;
@@ -338,7 +338,7 @@ void killAllChildProcess(pid_t ppid)
 
 	sprintf(command, "ps -ef|awk '$3==%u {print $2}'", ppid);
 	FILE *fp = (FILE *)popen(command, "r");
-	while (getline(&buff, &len, fp) >= 0)
+	for ( ; getline(&buff, &len, fp) >= 0 ; )
 	{
 		killAllChildProcess(atoi(buff));
 		char cmd[256] = {0};
@@ -591,7 +591,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	long arg2IsInt = 0;
 
 	long i = 0;
-	while (args[i] != NULL)
+	for ( ; args[i] != NULL ; )
 	{
 		i++;
 	}
@@ -600,9 +600,8 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 		char *temp = args[2];
 
-		long length, index;
-		length = strlen(temp);
-		for (index = 0; index < length; index++)
+		long index;
+		for (index = 0; index < strlen(temp); index++)
 			if (!isdigit(temp[index]))
 			{
 				fprintf(stderr, "%s", "Check your arguments !\n");
@@ -635,7 +634,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 					bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
 					long temp = 1;
 
-					while (temp != index && tempPtr != NULL)
+					for ( ; temp != index && tempPtr != NULL ; )
 					{
 						previousPtr = tempPtr;
 						tempPtr = tempPtr->nextPtr;
@@ -682,7 +681,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			{
 				bookmarkPtr tempPtr = *startPtrBookmark;
 				long j = 0;
-				while (tempPtr != NULL && j != index)
+				for ( ; tempPtr != NULL && j != index ; )
 				{
 					tempPtr = tempPtr->nextPtr;
 					j++;
@@ -691,10 +690,9 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 				{
 					char exe[90];
 					strcpy(exe, tempPtr->progName);
-					long length = strlen(exe);
 					long i = 0;
-					exe[length - 2] = '\0';
-					for (i = 0; i < length; i++)
+					exe[strlen(exe) - 2] = '\0';
+					for (i = 0; i < strlen(exe); i++)
 					{
 						exe[i] = exe[i + 1];
 					}
@@ -722,7 +720,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 		if (*startPtrBookmark != NULL)
 		{
-			while (tempPointer->nextPtr != NULL)
+			for ( ; tempPointer->nextPtr != NULL ; )
 			{
 				printf("%ld %s\n", count, tempPointer->progName);
 				count++;
@@ -748,11 +746,10 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	else if (strlen(args[1]) < strlen(tempStringComp) ? 0 : memcmp(tempStringComp, args[1], strlen(tempStringComp)) == 0)
 	{
 
-		long length = strlen(args[numOfArgs - 1]);
 		char command[100];
 		strcpy(command, args[numOfArgs - 1]);
 
-		if (command[length - 1] == '\"')
+		if (command[strlen(args[numOfArgs - 1]) - 1] == '\"')
 		{
 		}
 		else
@@ -826,7 +823,7 @@ void printSearchCommand(char *fileName, char *pattern)
 	sprintf(fName, "grep -rnwl  %s -e %s | awk '{print $0}'", fileName, pattern);
 	FILE *fp = (FILE *)popen(fName, "r");
 
-	while (getline(&buff, &len, fp) >= 0)
+	for ( ; getline(&buff, &len, fp) >= 0 ; )
 	{
 		strcpy(file, buff);
 	}
@@ -847,18 +844,16 @@ void printSearchCommand(char *fileName, char *pattern)
 	sprintf(command, "grep -rnw  %s -e %s | awk '{print $0}'", fileName, pattern);
 
 	FILE *fp2 = (FILE *)popen(command, "r");
-	while (fgets(result, sizeof(result), fp2))
+	for ( ; fgets(result, sizeof(result), fp2) ; )
 	{
 		strcpy(allLine, result);
 
 		char lineNumber[15] = {0};
 
 		long i = 0;
-
-		long length = strlen(allLine);
 		long digitNum = 1;
 
-		for (i = 0; i < length; i++)
+		for (i = 0; i < strlen(allLine); i++)
 		{
 			if (!isdigit(allLine[i]))
 			{
@@ -871,7 +866,7 @@ void printSearchCommand(char *fileName, char *pattern)
 			}
 		}
 
-		for (i = 0; i < length; i++)
+		for (i = 0; i < strlen(allLine); i++)
 		{
 			allLine[i] = allLine[digitNum + i];
 		}
@@ -897,7 +892,7 @@ void listFilesRecursively(char *basePath, char *pattern)
 
 	if (dir)
 	{
-		while ((dp = readdir(dir)) != NULL)
+		for ( ; (dp = readdir(dir)) != NULL ; )
 		{
 			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 			{
@@ -932,7 +927,7 @@ void listFilesRecursively(char *basePath, char *pattern)
 void searchCommand(char *args[])
 {
 	long i = 0;
-	while (args[i] != NULL)
+	for ( ; args[i] != NULL ; )
 	{
 		i++;
 	}
@@ -961,7 +956,7 @@ void searchCommand(char *args[])
 			return;
 		}
 
-		while ((de = readdir(dr)) != NULL)
+		for ( ; (de = readdir(dr)) != NULL ; )
 		{
 			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
 			{
@@ -971,11 +966,10 @@ void searchCommand(char *args[])
 				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
 														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
 				{
-					long length = strlen(args[i - 1]);
 					char pattern[100];
 					strcpy(pattern, args[i - 1]);
 
-					if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
+					if (!(pattern[0] == '"' && pattern[strlen(args[i - 1]) - 1] == '"'))
 					{
 						fprintf(stderr, "Check your arguments!You need to give your pattern between \" \"\n");
 						closedir(dr);
