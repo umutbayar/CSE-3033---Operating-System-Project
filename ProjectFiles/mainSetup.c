@@ -187,7 +187,7 @@ long findpathof(char *pth, const char *exe)
 
 			if (!stop)
 				beg = end + 1;
-		} while (!stop && !found);
+		} for ( ; !stop && !found ; );
 
 		return found;
 	}
@@ -233,7 +233,7 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 		ListProcessPtr previousPtr = NULL;
 		ListProcessPtr currentPtr = *sPtr;
 
-		while (currentPtr != NULL)
+		for ( ; currentPtr != NULL ; )
 		{
 			previousPtr = currentPtr;
 			currentPtr = currentPtr->nextPtr;
@@ -269,7 +269,7 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 		bookmarkPtr previousPtr = NULL;
 		bookmarkPtr currentPtr = *bPtr;
 
-		while (currentPtr != NULL)
+		for ( ; currentPtr != NULL ; )
 		{
 			previousPtr = currentPtr;
 			currentPtr = currentPtr->nextPtr;
@@ -300,7 +300,7 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 			ListProcessPtr previousPtr = *currentPtr;
 			ListProcessPtr tempPtr = (*currentPtr)->nextPtr;
 
-			while (tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1)
+			for ( ; tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1 ; )
 			{
 				previousPtr = tempPtr;
 				tempPtr = tempPtr->nextPtr;
@@ -338,7 +338,7 @@ void killAllChildProcess(pid_t ppid)
 
 	sprintf(command, "ps -ef|awk '$3==%u {print $2}'", ppid);
 	FILE *fp = (FILE *)popen(command, "r");
-	while (getline(&buff, &len, fp) >= 0)
+	for ( ; getline(&buff, &len, fp) >= 0 ; )
 	{
 		killAllChildProcess(atoi(buff));
 		char cmd[256] = {0};
@@ -591,7 +591,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	long arg2IsInt = 0;
 
 	long i = 0;
-	while (args[i] != NULL)
+	for ( ; args[i] != NULL ; )
 	{
 		i++;
 	}
@@ -634,7 +634,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 					bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
 					long temp = 1;
 
-					while (temp != index && tempPtr != NULL)
+					for ( ; temp != index && tempPtr != NULL ; )
 					{
 						previousPtr = tempPtr;
 						tempPtr = tempPtr->nextPtr;
@@ -681,7 +681,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			{
 				bookmarkPtr tempPtr = *startPtrBookmark;
 				long j = 0;
-				while (tempPtr != NULL && j != index)
+				for ( ; tempPtr != NULL && j != index ; )
 				{
 					tempPtr = tempPtr->nextPtr;
 					j++;
@@ -720,7 +720,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 		if (*startPtrBookmark != NULL)
 		{
-			while (tempPointer->nextPtr != NULL)
+			for ( ; tempPointer->nextPtr != NULL ; )
 			{
 				printf("%ld %s\n", count, tempPointer->progName);
 				count++;
@@ -823,7 +823,7 @@ void printSearchCommand(char *fileName, char *pattern)
 	sprintf(fName, "grep -rnwl  %s -e %s | awk '{print $0}'", fileName, pattern);
 	FILE *fp = (FILE *)popen(fName, "r");
 
-	while (getline(&buff, &len, fp) >= 0)
+	for ( ; getline(&buff, &len, fp) >= 0 ; )
 	{
 		strcpy(file, buff);
 	}
@@ -844,7 +844,7 @@ void printSearchCommand(char *fileName, char *pattern)
 	sprintf(command, "grep -rnw  %s -e %s | awk '{print $0}'", fileName, pattern);
 
 	FILE *fp2 = (FILE *)popen(command, "r");
-	while (fgets(result, sizeof(result), fp2))
+	for ( ; fgets(result, sizeof(result), fp2) ; )
 	{
 		strcpy(allLine, result);
 
@@ -892,7 +892,7 @@ void listFilesRecursively(char *basePath, char *pattern)
 
 	if (dir)
 	{
-		while ((dp = readdir(dir)) != NULL)
+		for ( ; (dp = readdir(dir)) != NULL ; )
 		{
 			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 			{
@@ -927,7 +927,7 @@ void listFilesRecursively(char *basePath, char *pattern)
 void searchCommand(char *args[])
 {
 	long i = 0;
-	while (args[i] != NULL)
+	for ( ; args[i] != NULL ; )
 	{
 		i++;
 	}
@@ -956,7 +956,7 @@ void searchCommand(char *args[])
 			return;
 		}
 
-		while ((de = readdir(dr)) != NULL)
+		for ( ; (de = readdir(dr)) != NULL ; )
 		{
 			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
 			{
