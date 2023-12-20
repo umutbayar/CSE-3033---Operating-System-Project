@@ -52,7 +52,6 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
-long checkSearchArguments(char *args[]);
 void formatInput(char *args[]);
 void searchCommand(char *args[]);
 long checkIORedirection(char *args[]);
@@ -896,34 +895,36 @@ void listFilesRecursively(char *basePath, char *pattern)
 	struct dirent *dp;
 	DIR *dir = opendir(basePath);
 
-	if (dir) {
-		while ((dp = readdir(dir)) != NULL)
+	if (dir)
 	{
-		if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+		while ((dp = readdir(dir)) != NULL)
 		{
-
-			char fName[50];
-
-			strcpy(fName, dp->d_name);
-			char grepFile[1000];
-			strcpy(grepFile, basePath);
-			strcat(grepFile, "/");
-			strcat(grepFile, dp->d_name);
-
-			if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
-													fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
+			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 			{
-				printSearchCommand(grepFile, pattern);
+
+				char fName[50];
+
+				strcpy(fName, dp->d_name);
+				char grepFile[1000];
+				strcpy(grepFile, basePath);
+				strcat(grepFile, "/");
+				strcat(grepFile, dp->d_name);
+
+				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
+														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
+				{
+					printSearchCommand(grepFile, pattern);
+				}
+				strcpy(path, basePath);
+				strcat(path, "/");
+				strcat(path, dp->d_name);
+				listFilesRecursively(path, pattern);
 			}
-			strcpy(path, basePath);
-			strcat(path, "/");
-			strcat(path, dp->d_name);
-			listFilesRecursively(path, pattern);
 		}
+		closedir(dir);
 	}
-	closedir(dir);
-	}
-	else {
+	else
+	{
 		return;
 	}
 }
@@ -1022,15 +1023,19 @@ void formatInput(char *args[])
 		}
 	}
 
-	if (flag == 0)
-		return;
-
-	for (i = counter; i < numOfArgs; i++)
+	if (flag != 0)
 	{
-		args[i] = NULL;
-	}
+		for (i = counter; i < numOfArgs; i++)
+		{
+			args[i] = NULL;
+		}
 
-	numOfArgs = numOfArgs - (numOfArgs - a);
+		numOfArgs = numOfArgs - (numOfArgs - a);
+	}
+	else
+	{
+		return;
+	}
 }
 
 long checkIORedirection(char *args[])
