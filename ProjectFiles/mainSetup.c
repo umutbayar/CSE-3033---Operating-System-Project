@@ -25,10 +25,10 @@
 struct listProcess
 {
 
-	long processNumber;
+	long noOfProc;
 	pid_t pid;
-	char progName[50];
-	struct listProcess *nextPtr;
+	char nameOfprog[120];
+	struct listProcess *pointNext;
 };
 typedef struct listProcess ListProcess;
 typedef ListProcess *ListProcessPtr;
@@ -36,27 +36,27 @@ typedef ListProcess *ListProcessPtr;
 struct bookmark
 {
 
-	char progName[50];
-	struct bookmark *nextPtr;
+	char nameOfprog[50];
+	struct bookmark *pointNext;
 };
 typedef struct bookmark bookmarks;
-typedef bookmarks *bookmarkPtr;
+typedef bookmarks *pointBookmark;
 
 void setup(char inputBuffer[], char *args[], int *background);
-long findpathof(char *pth, const char *exe);
-void insert(ListProcessPtr *sPtr, pid_t pid, char progName[]);
-void insertBookmark(bookmarkPtr *bPtr, char progName[]);
-void deleteStoppedList(ListProcessPtr *currentPtr);
-void killAllChildProcess(pid_t ppid);
-void childSignalHandler(int signum);
-void sigtstpHandler();
-void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
-void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
-void printSearchCommand(char *fileName, char *pattern);
-void listFilesRecursively(char *basePath, char *pattern);
-void formatInput(char *args[]);
-void searchCommand(char *args[]);
-long checkIORedirection(char *args[]);
+long PathFounder(char *Path, const char *executable);
+void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[]);
+void appendBM(pointBookmark *PointerB , char nameOfprog[]);
+void ListKillofStopped(ListProcessPtr *pointOfNow);
+void childPkiller(pid_t ppid);
+void SignalofCh(int signum);
+void pointOfSigts();
+void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr);
+void reqOfBmark(char *args[], pointBookmark *startPtrBookmark);
+void reqOffindPrinter(char *fileName, char *Design);
+void printerOfFolder(char *pathOfStart, char *Design);
+void inputOfConfiguration(char *args[]);
+void reqOffind(char *args[]);
+long SwitchIOControl(char *args[]);
 int main(void);
 
 char inputFileName[20];
@@ -67,7 +67,7 @@ long inputRedirectFlag;
 long outputRedirectFlag;
 
 long numOfArgs = 0;
-long processNumber = 1;
+long noOfProc = 1;
 
 pid_t parentPid;
 pid_t fgProcessPid = 0;
@@ -133,7 +133,7 @@ void setup(char inputBuffer[], char *args[], int *background)
 	numOfArgs = ct;
 }
 
-long findpathof(char *pth, const char *exe)
+long pathFounder(char *Path, const char *executable)
 {
 	char *searchpath;
 	char *beg;
@@ -142,7 +142,7 @@ long findpathof(char *pth, const char *exe)
 	long found;
 	long len;
 
-	if (strchr(exe, '/') == NULL)
+	if (strchr(executable, '/') == NULL)
 	{
 		searchpath = getenv("PATH");
 		if (searchpath == NULL)
@@ -159,24 +159,24 @@ long findpathof(char *pth, const char *exe)
 
 			if (end != NULL)
 			{
-				strncpy(pth, beg, end - beg);
-				pth[end - beg] = '\0';
+				strncpy(Path, beg, end - beg);
+				Path[end - beg] = '\0';
 				len = end - beg;
 			}
 			else
 			{
 				stop = 1;
-				strncpy(pth, beg, PATH_MAX);
-				len = strlen(pth);
+				strncpy(Path, beg, PATH_MAX);
+				len = strlen(Path);
 			}
-			if (pth[len - 1] != '/')
-				strncat(pth, "/", 2);
-			strncat(pth, exe, PATH_MAX - len);
+			if (Path[len - 1] != '/')
+				strncat(Path, "/", 2);
+			strncat(Path, executable, PATH_MAX - len);
 
 			long result;
 			struct stat statinfo;
 
-			result = stat(pth, &statinfo);
+			result = stat(Path, &statinfo);
 			if (result < 0)
 				found = 0;
 			if (!S_ISREG(statinfo.st_mode))
@@ -194,12 +194,12 @@ long findpathof(char *pth, const char *exe)
 		return found;
 	}
 
-	if (realpath(exe, pth) != NULL)
+	if (realpath(executable, Path) != NULL)
 	{
 		long result;
 		struct stat statinfo;
 
-		result = stat(pth, &statinfo);
+		result = stat(Path, &statinfo);
 		if (result < 0)
 			return 0;
 		else if (!S_ISREG(statinfo.st_mode))
@@ -216,7 +216,7 @@ long findpathof(char *pth, const char *exe)
 	}
 }
 
-void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
+void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[])
 {
 
 	ListProcessPtr newPtr = malloc(sizeof(ListProcess));
@@ -227,37 +227,37 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 	}
 	else
 	{
-		strcpy(newPtr->progName, progName);
-		newPtr->processNumber = processNumber;
+		strcpy(newPtr->nameOfprog, nameOfprog);
+		newPtr->noOfProc = noOfProc;
 		newPtr->pid = pid;
-		newPtr->nextPtr = NULL;
+		newPtr->pointNext = NULL;
 
 		ListProcessPtr previousPtr = NULL;
-		ListProcessPtr currentPtr = *sPtr;
+		ListProcessPtr pointOfNow = *sPtr;
 
-		for ( ; currentPtr != NULL ; )
+		for ( ; pointOfNow != NULL ; )
 		{
-			previousPtr = currentPtr;
-			currentPtr = currentPtr->nextPtr;
+			previousPtr = pointOfNow;
+			pointOfNow = pointOfNow->pointNext;
 		}
 
 		if (previousPtr != NULL)
 		{
-			previousPtr->nextPtr = newPtr;
-			newPtr->nextPtr = currentPtr;
+			previousPtr->pointNext = newPtr;
+			newPtr->pointNext = pointOfNow;
 		}
 		else
 		{
-			newPtr->nextPtr = *sPtr;
+			newPtr->pointNext = *sPtr;
 			*sPtr = newPtr;
 		}
 	}
 }
 
-void insertBookmark(bookmarkPtr *bPtr, char progName[])
+void appendBM(pointBookmark *PointerB, char nameOfprog[])
 {
 
-	bookmarkPtr newPtr = malloc(sizeof(bookmarks));
+	pointBookmark newPtr = malloc(sizeof(bookmarks));
 
 	if (newPtr == NULL)
 	{
@@ -265,47 +265,47 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 	}
 	else
 	{
-		strcpy(newPtr->progName, progName);
-		newPtr->nextPtr = NULL;
+		strcpy(newPtr->nameOfprog, nameOfprog);
+		newPtr->pointNext = NULL;
 
-		bookmarkPtr previousPtr = NULL;
-		bookmarkPtr currentPtr = *bPtr;
+		pointBookmark previousPtr = NULL;
+		pointBookmark pointOfNow = *PointerB;
 
-		for ( ; currentPtr != NULL ; )
+		for ( ; pointOfNow != NULL ; )
 		{
-			previousPtr = currentPtr;
-			currentPtr = currentPtr->nextPtr;
+			previousPtr = pointOfNow;
+			pointOfNow = pointOfNow->pointNext;
 		}
 
 		if (previousPtr != NULL)
 		{
-			previousPtr->nextPtr = newPtr;
-			newPtr->nextPtr = currentPtr;
+			previousPtr->pointNext = newPtr;
+			newPtr->pointNext = pointOfNow;
 		}
 		else
 		{
-			newPtr->nextPtr = *bPtr;
-			*bPtr = newPtr;
+			newPtr->pointNext = *PointerB;
+			*PointerB = newPtr;
 		}
 	}
 }
 
-void deleteStoppedList(ListProcessPtr *currentPtr)
+void ListKillofStopped(ListProcessPtr *pointOfNow)
 {
 	int status;
 
-	if ((*currentPtr) != NULL)
+	if ((*pointOfNow) != NULL)
 	{
 
-		if (waitpid((*currentPtr)->pid, &status, WNOHANG) != -1)
+		if (waitpid((*pointOfNow)->pid, &status, WNOHANG) != -1)
 		{
-			ListProcessPtr previousPtr = *currentPtr;
-			ListProcessPtr tempPtr = (*currentPtr)->nextPtr;
+			ListProcessPtr previousPtr = *pointOfNow;
+			ListProcessPtr tempPtr = (*pointOfNow)->pointNext;
 
 			for ( ; tempPtr != NULL && waitpid(tempPtr->pid, &status, WNOHANG) != -1 ; )
 			{
 				previousPtr = tempPtr;
-				tempPtr = tempPtr->nextPtr;
+				tempPtr = tempPtr->pointNext;
 			}
 			if (tempPtr == NULL)
 			{
@@ -313,17 +313,17 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 			else
 			{
 				ListProcessPtr delPtr = tempPtr;
-				previousPtr->nextPtr = tempPtr->nextPtr;
+				previousPtr->pointNext = tempPtr->pointNext;
 				free(delPtr);
-				deleteStoppedList(currentPtr);
+				ListKillofStopped(pointOfNow);
 			}
 		}
 		else
 		{
-			ListProcessPtr tempPtr = *currentPtr;
-			*currentPtr = (*currentPtr)->nextPtr;
+			ListProcessPtr tempPtr = *pointOfNow;
+			*pointOfNow = (*pointOfNow)->pointNext;
 			free(tempPtr);
-			deleteStoppedList(currentPtr);
+			ListKillofStopped(pointOfNow);
 		}
 	}
 	else
@@ -332,7 +332,7 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 	}
 }
 
-void killAllChildProcess(pid_t ppid)
+void childPkiller(pid_t ppid)
 {
 	char *buff = NULL;
 	size_t len = 255;
@@ -342,7 +342,7 @@ void killAllChildProcess(pid_t ppid)
 	FILE *fp = (FILE *)popen(command, "r");
 	for ( ; getline(&buff, &len, fp) >= 0 ; )
 	{
-		killAllChildProcess(atoi(buff));
+		childPkiller(atoi(buff));
 		char cmd[256] = {0};
 		sprintf(cmd, "kill -TSTP %d", atoi(buff));
 		system(cmd);
@@ -351,14 +351,14 @@ void killAllChildProcess(pid_t ppid)
 	fclose(fp);
 }
 
-void childSignalHandler(int signum)
+void SignalofCh(int signum)
 {
 	int status;
 	pid_t pid;
 	pid = waitpid(-1, &status, WNOHANG);
 }
 
-void sigtstpHandler()
+void pointOfSigts()
 {
 
 	if (fgProcessPid == 0 || waitpid(fgProcessPid, NULL, WNOHANG) == -1)
@@ -368,14 +368,14 @@ void sigtstpHandler()
 		return;
 	}
 
-	killAllChildProcess(fgProcessPid);
+	childPkiller(fgProcessPid);
 	char cmd[256] = {0};
 	sprintf(cmd, "kill -TSTP %d", fgProcessPid);
 	system(cmd);
 	fgProcessPid = 0;
 }
 
-void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr)
+void ProcessOfconstract(char path[], char *args[], int *background, ListProcessPtr *sPtr)
 {
 
 	pid_t childPid;
@@ -580,13 +580,13 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 		{
 			waitpid(childPid, NULL, WNOHANG);
 			setpgid(childPid, childPid);
-			insert(&(*sPtr), childPid, args[0]);
-			processNumber++;
+			append(&(*sPtr), childPid, args[0]);
+			noOfProc++;
 		}
 	}
 }
 
-void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
+void reqOfBmark(char *args[], pointBookmark *startPtrBookmark)
 {
 
 	char *tempStringComp = "\"";
@@ -627,7 +627,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 		else
 		{
-			bookmarkPtr *tempPointer = startPtrBookmark;
+			pointBookmark *tempPointer = startPtrBookmark;
 			long index = atoi(args[2]);
 
 			if (*tempPointer != NULL)
@@ -635,20 +635,20 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 				if (index != 0)
 				{
-					bookmarkPtr previousPtr = *tempPointer;
-					bookmarkPtr tempPtr = (*tempPointer)->nextPtr;
+					pointBookmark previousPtr = *tempPointer;
+					pointBookmark tempPtr = (*tempPointer)->pointNext;
 					long temp = 1;
 
 					for ( ; temp != index && tempPtr != NULL ; )
 					{
 						previousPtr = tempPtr;
-						tempPtr = tempPtr->nextPtr;
+						tempPtr = tempPtr->pointNext;
 						temp++;
 					}
 					if (tempPtr != NULL)
 					{
-						bookmarkPtr delPtr = tempPtr;
-						previousPtr->nextPtr = tempPtr->nextPtr;
+						pointBookmark delPtr = tempPtr;
+						previousPtr->pointNext = tempPtr->pointNext;
 						free(delPtr);
 					}
 					else
@@ -658,8 +658,8 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 				}
 				else
 				{
-					bookmarkPtr tempPtr = *tempPointer;
-					*tempPointer = (*tempPointer)->nextPtr;
+					pointBookmark tempPtr = *tempPointer;
+					*tempPointer = (*tempPointer)->pointNext;
 					free(tempPtr);
 				}
 			}
@@ -684,26 +684,26 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 
 			if (*startPtrBookmark != NULL)
 			{
-				bookmarkPtr tempPtr = *startPtrBookmark;
+				pointBookmark tempPtr = *startPtrBookmark;
 				long j = 0;
 				for ( ; tempPtr != NULL && j != index ; )
 				{
-					tempPtr = tempPtr->nextPtr;
+					tempPtr = tempPtr->pointNext;
 					j++;
 				}
 				if (tempPtr != NULL)
 				{
-					char exe[90];
-					strcpy(exe, tempPtr->progName);
+					char executable[90];
+					strcpy(executable, tempPtr->nameOfprog);
 					long i = 0;
-					exe[strlen(exe) - 2] = '\0';
-					while (i < strlen(exe))
+					executable[strlen(executable) - 2] = '\0';
+					while (i < strlen(executable))
 					{
-						exe[i] = exe[i + 1];
+						executable[i] = executable[i + 1];
 						i++;
 					}
 					char command[100];
-					sprintf(command, "%s", exe);
+					sprintf(command, "%s", executable);
 					system(command);
 				}
 				else
@@ -722,17 +722,17 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 
 		long count = 0;
-		bookmarkPtr tempPointer = *startPtrBookmark;
+		pointBookmark tempPointer = *startPtrBookmark;
 
 		if (*startPtrBookmark != NULL)
 		{
-			for ( ; tempPointer->nextPtr != NULL ; )
+			for ( ; tempPointer->pointNext != NULL ; )
 			{
-				printf("%ld %s\n", count, tempPointer->progName);
+				printf("%ld %s\n", count, tempPointer->nameOfprog);
 				count++;
-				tempPointer = tempPointer->nextPtr;
+				tempPointer = tempPointer->pointNext;
 			}
-			printf("%ld %s\n", count, tempPointer->progName);
+			printf("%ld %s\n", count, tempPointer->nameOfprog);
 		}
 		else
 		{
@@ -795,7 +795,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 		exec = firstArgument;
 
-		if (findpathof(path, exec))
+		if (pathFounder(path, exec))
 		{
 		}
 		else
@@ -804,17 +804,17 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			return;
 		}
 
-		char exe[90] = {""};
+		char executable[90] = {""};
 		t = 1;
 		while (t < numOfArgs)
 		{
-			strcat(exe, args[t]);
-			strcat(exe, " ");
+			strcat(executable, args[t]);
+			strcat(executable, " ");
 			t++;
 		}
 		pid_t tempPid;
-		insertBookmark(startPtrBookmark, exe);
-		exe[0] = '\0';
+		appendBM(startPtrBookmark, executable);
+		executable[0] = '\0';
 	}
 	else
 	{
@@ -823,7 +823,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	}
 }
 
-void printSearchCommand(char *fileName, char *pattern)
+void reqOffindPrinter(char *fileName, char *Design)
 {
 
 	char file[1000] = {0};
@@ -832,7 +832,7 @@ void printSearchCommand(char *fileName, char *pattern)
 	char fName[256] = {0};
 	size_t len = 255;
 
-	sprintf(fName, "grep -rnwl  %s -e %s | awk '{print $0}'", fileName, pattern);
+	sprintf(fName, "grep -rnwl  %s -e %s | awk '{print $0}'", fileName, Design);
 	FILE *fp = (FILE *)popen(fName, "r");
 
 	for ( ; getline(&buff, &len, fp) >= 0 ; )
@@ -853,7 +853,7 @@ void printSearchCommand(char *fileName, char *pattern)
 	char command[256] = {0};
 	size_t len2 = 256;
 
-	sprintf(command, "grep -rnw  %s -e %s | awk '{print $0}'", fileName, pattern);
+	sprintf(command, "grep -rnw  %s -e %s | awk '{print $0}'", fileName, Design);
 
 	FILE *fp2 = (FILE *)popen(command, "r");
 	for ( ; fgets(result, sizeof(result), fp2) ; )
@@ -899,11 +899,11 @@ void printSearchCommand(char *fileName, char *pattern)
 	fclose(fp2);
 }
 
-void listFilesRecursively(char *basePath, char *pattern)
+void printerOfFolder(char *pathOfStart, char *Design)
 {
 	char path[1000];
 	struct dirent *dp;
-	DIR *dir = opendir(basePath);
+	DIR *dir = opendir(pathOfStart);
 
 	if (dir)
 	{
@@ -916,19 +916,19 @@ void listFilesRecursively(char *basePath, char *pattern)
 
 				strcpy(fName, dp->d_name);
 				char grepFile[1000];
-				strcpy(grepFile, basePath);
+				strcpy(grepFile, pathOfStart);
 				strcat(grepFile, "/");
 				strcat(grepFile, dp->d_name);
 
 				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
 														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
 				{
-					printSearchCommand(grepFile, pattern);
+					reqOffindPrinter(grepFile, Design);
 				}
-				strcpy(path, basePath);
+				strcpy(path, pathOfStart);
 				strcat(path, "/");
 				strcat(path, dp->d_name);
-				listFilesRecursively(path, pattern);
+				printerOfFolder(path, Design);
 			}
 		}
 		closedir(dir);
@@ -939,7 +939,7 @@ void listFilesRecursively(char *basePath, char *pattern)
 	}
 }
 
-void searchCommand(char *args[])
+void reqOffind(char *args[])
 {
 	long i = 0;
 	for ( ; args[i] != NULL ; )
@@ -981,17 +981,17 @@ void searchCommand(char *args[])
 				if (fName[strlen(fName) - 2] == '.' && (fName[strlen(fName) - 1] == 'c' || fName[strlen(fName) - 1] == 'C' ||
 														fName[strlen(fName) - 1] == 'h' || fName[strlen(fName) - 1] == 'H'))
 				{
-					char pattern[100];
-					strcpy(pattern, args[i - 1]);
+					char Design[100];
+					strcpy(Design, args[i - 1]);
 
-					if (!(pattern[0] == '"' && pattern[strlen(args[i - 1]) - 1] == '"'))
+					if (!(Design[0] == '"' && Design[strlen(args[i - 1]) - 1] == '"'))
 					{
-						fprintf(stderr, "Check your arguments!You need to give your pattern between \" \"\n");
+						fprintf(stderr, "Check your arguments!You need to give your Design between \" \"\n");
 						closedir(dr);
 						return;
 					}
 
-					printSearchCommand(de->d_name, args[i - 1]);
+					reqOffindPrinter(de->d_name, args[i - 1]);
 				}
 			}
 		}
@@ -1004,7 +1004,7 @@ void searchCommand(char *args[])
 		char cwd[PATH_MAX];
 		if (getcwd(cwd, sizeof(cwd)) != NULL)
 		{
-			listFilesRecursively(cwd, args[2]);
+			printerOfFolder(cwd, args[2]);
 		}
 		else
 		{
@@ -1013,7 +1013,7 @@ void searchCommand(char *args[])
 	}
 }
 
-void formatInput(char *args[])
+void inputOfConfiguration(char *args[])
 {
 
 	long i = 0;
@@ -1050,7 +1050,7 @@ void formatInput(char *args[])
 	}
 }
 
-long checkIORedirection(char *args[])
+long SwitchIOControl(char *args[])
 {
 	if (numOfArgs == 2 && strcmp(args[0], "io") == 0 && strcmp(args[1], "-h") == 0)
 	{
@@ -1155,23 +1155,23 @@ int main(void)
 	char *args[80];
 	char path[PATH_MAX + 1];
 	char *progpath;
-	char *exe;
+	char *executable;
 
 	system("clear");
 
-	signal(SIGCHLD, childSignalHandler);
-	signal(SIGTSTP, sigtstpHandler);
+	signal(SIGCHLD, SignalofCh);
+	signal(SIGTSTP, pointOfSigts);
 
 	parentPid = getpid();
 
 	ListProcessPtr startPtr = NULL;
-	bookmarkPtr startPtrBookmark = NULL;
+	pointBookmark startPtrBookmark = NULL;
 
 	while (parentPid == getpid())
 	{
 		background = 0;
 		if (startPtr == NULL)
-			processNumber = 1;
+			noOfProc = 1;
 		printf("myshell: ");
 		fflush(0);
 
@@ -1180,17 +1180,17 @@ int main(void)
 		if (args[0] == NULL)
 			continue;
 		progpath = strdup(args[0]);
-		exe = args[0];
+		executable = args[0];
 
-		if (checkIORedirection(args) != 0)
+		if (SwitchIOControl(args) != 0)
 		{
 			continue;
 		}
-		formatInput(args);
+		inputOfConfiguration(args);
 
 		if (strcmp(args[0], "exit") == 0)
 		{
-			deleteStoppedList(&startPtr);
+			ListKillofStopped(&startPtr);
 			if ((startPtr == NULL) != 0)
 			{
 				exit(1);
@@ -1202,24 +1202,24 @@ int main(void)
 		}
 		else if (strcmp(args[0], "search") == 0)
 		{
-			searchCommand(args);
+			reqOffind(args);
 			continue;
 		}
 		else if (strcmp(args[0], "bookmark") == 0)
 		{
-			bookmarkCommand(args, &startPtrBookmark);
+			reqOfBmark(args, &startPtrBookmark);
 			continue;
 		}
-		else if (!findpathof(path, exe))
+		else if (!pathFounder(path, executable))
 		{
-			fprintf(stderr, "No executable \"%s\" found\n", exe);
+			fprintf(stderr, "No executable \"%s\" found\n", executable);
 			free(progpath);
 		}
 		else
 		{
 			if (*args[numOfArgs - 1] == '&')
 				args[numOfArgs - 1] = '\0';
-			createProcess(path, args, &background, &startPtr);
+			ProcessOfconstract(path, args, &background, &startPtr);
 		}
 		path[0] = '\0';
 		inputFileName[0] = '\0';
