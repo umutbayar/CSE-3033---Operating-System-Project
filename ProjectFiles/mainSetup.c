@@ -216,7 +216,7 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 	}
 }
 
-void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition
+void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testCondition)
 {
 
 	ListProcessPtr newPtr = malloc(sizeof(ListProcess));
