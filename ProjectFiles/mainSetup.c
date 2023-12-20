@@ -19,7 +19,7 @@
 #define ERROR_OPEN_DIRECTORY "Did not open directory\n"
 #define ERROR_GETCWD "Error getcwd() \n"
 #define ERROR_TWO_WAYS "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"
-#define ERROR_MEMORY "Did not use memory\n
+#define ERROR_MEMORY "Did not use memory\n"
 #define EMPTY_LIST "Empty list\n"
 #define ERROR_BOOKMARK  "Bookmark usage wrong! "
 struct listProcess
