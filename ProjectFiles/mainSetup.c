@@ -43,7 +43,7 @@ typedef struct bookmark bookmarks;
 typedef bookmarks *pointBookmark;
 
 void setup(char inputBuffer[], char *args[], int *background);
-long PathFounder(char *Path, const char *executable);
+long pathFounder(const char *executable, char *Path);
 void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[]);
 void appendBM(pointBookmark *PointerB , char nameOfprog[]);
 void ListKillofStopped(ListProcessPtr *pointOfNow);
@@ -133,7 +133,7 @@ void setup(char inputBuffer[], char *args[], int *background)
 	numOfArgs = ct;
 }
 
-long pathFounder(char *Path, const char *executable)
+long pathFounder(const char *executable, char *Path)
 {
 	char *searchpath;
 	char *beg;
@@ -795,7 +795,7 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark)
 		}
 		exec = firstArgument;
 
-		if (pathFounder(path, exec))
+		if (pathFounder(exec, path))
 		{
 		}
 		else
@@ -1210,7 +1210,7 @@ int main(void)
 			reqOfBmark(args, &startPtrBookmark);
 			continue;
 		}
-		else if (!pathFounder(path, executable))
+		else if (!pathFounder(executable, path))
 		{
 			fprintf(stderr, "No executable \"%s\" found\n", executable);
 			free(progpath);
