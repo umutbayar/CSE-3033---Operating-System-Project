@@ -139,7 +139,6 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 	int test = 0;
 	if (test == testCondition)
 	{
-		char *searchpath;
 		char *beg;
 		char *end;
 		long stop;
@@ -148,13 +147,12 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 
 		if (strchr(executable, '/') == NULL)
 		{
-			searchpath = getenv("PATH");
-			if (searchpath == NULL)
+			if (getenv("PATH") == NULL)
 				return 0;
-			if (strlen(searchpath) <= 0)
+			if (strlen(getenv("PATH")) <= 0)
 				return 0;
 
-			beg = searchpath;
+			beg = getenv("PATH");
 			stop = 0;
 			found = 0;
 			do
@@ -200,11 +198,9 @@ long pathFounder(const char *executable, char *Path, int testCondition)
 
 		if (realpath(executable, Path) != NULL)
 		{
-			long result;
 			struct stat statinfo;
 
-			result = stat(Path, &statinfo);
-			if (result < 0)
+			if (stat(Path, &statinfo) < 0)
 				return 0;
 			else if (!S_ISREG(statinfo.st_mode))
 				return 0;
@@ -411,19 +407,14 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 	int test = 0;
 	if (test == testCondition)
 	{
-		pid_t childPid;
-
-		childPid = fork();
+		pid_t childPid = fork();
 
 		if (childPid == 0)
 		{
 			if (inputRedirectFlag == 1)
 			{
 
-				long fdInput;
-				fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-				if (fdInput != -1)
+				if (open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 				{
 				}
 				else
@@ -432,7 +423,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 					return;
 				}
 
-				if (dup2(fdInput, STDIN_FILENO) != -1)
+				if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDIN_FILENO) != -1)
 				{
 				}
 				else
@@ -441,7 +432,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 					return;
 				}
 
-				if (close(fdInput) != -1)
+				if (close(open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) != -1)
 				{
 				}
 				else
@@ -452,13 +443,11 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 
 				if (outputRedirectFlag == 1)
 				{
-					long fdOutput;
 
 					if (strcmp(outputRedirectSymbol, "2>") == 0)
 					{
-						fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-						if (fdOutput != -1)
+						if (open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 						{
 						}
 						else
@@ -467,7 +456,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 							return;
 						}
 
-						if (dup2(fdOutput, STDERR_FILENO) != -1)
+						if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDERR_FILENO) != -1)
 						{
 						}
 						else
@@ -478,9 +467,8 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 					}
 					else if (strcmp(outputRedirectSymbol, ">>") == 0)
 					{
-						fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-						if (fdOutput != -1)
+						if (open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 						{
 						}
 						else
@@ -489,7 +477,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 							return;
 						}
 
-						if (dup2(fdOutput, STDOUT_FILENO) != -1)
+						if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDOUT_FILENO) != -1)
 						{
 						}
 						else
@@ -500,9 +488,8 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 					}
 					else if (strcmp(outputRedirectSymbol, ">") == 0)
 					{
-						fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-						if (fdOutput != -1)
+						if (open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 						{
 						}
 						else
@@ -511,7 +498,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 							return;
 						}
 
-						if (dup2(fdOutput, STDOUT_FILENO) != -1)
+						if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDOUT_FILENO) != -1)
 						{
 						}
 						else
@@ -524,13 +511,9 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 			}
 			else if (outputRedirectFlag == 1)
 			{
-				long fdOutput;
-
 				if (strcmp(outputRedirectSymbol, "2>") == 0)
 				{
-					fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-					if (fdOutput != -1)
+					if (open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 					{
 					}
 					else
@@ -539,7 +522,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 						return;
 					}
 
-					if (dup2(fdOutput, STDERR_FILENO) != -1)
+					if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDERR_FILENO) != -1)
 					{
 					}
 					else
@@ -550,9 +533,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 				}
 				else if (strcmp(outputRedirectSymbol, ">>") == 0)
 				{
-					fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-					if (fdOutput != -1)
+					if (open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 					{
 					}
 					else
@@ -561,7 +542,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 						return;
 					}
 
-					if (dup2(fdOutput, STDOUT_FILENO) != -1)
+					if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDOUT_FILENO) != -1)
 					{
 					}
 					else
@@ -572,9 +553,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 				}
 				else if (strcmp(outputRedirectSymbol, ">") == 0)
 				{
-					fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-
-					if (fdOutput != -1)
+					if (open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) != -1)
 					{
 					}
 					else
@@ -583,7 +562,7 @@ void ProcessOfconstract(char path[], char *args[], int *background, ListProcessP
 						return;
 					}
 
-					if (dup2(fdOutput, STDOUT_FILENO) != -1)
+					if (dup2(open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH), STDOUT_FILENO) != -1)
 					{
 					}
 					else
@@ -689,18 +668,17 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 			else
 			{
 				pointBookmark *tempPointer = startPtrBookmark;
-				long index = atoi(args[2]);
 
 				if (*tempPointer != NULL)
 				{
 
-					if (index != 0)
+					if (atoi(args[2]) != 0)
 					{
 						pointBookmark previousPtr = *tempPointer;
 						pointBookmark tempPtr = (*tempPointer)->pointNext;
 						long temp = 1;
 
-						for (; temp != index && tempPtr != NULL;)
+						for (; temp != atoi(args[2]) && tempPtr != NULL;)
 						{
 							previousPtr = tempPtr;
 							tempPtr = tempPtr->pointNext;
@@ -740,14 +718,13 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 			}
 			else
 			{
-				long index = atoi(args[2]);
 				char *progpath;
 
 				if (*startPtrBookmark != NULL)
 				{
 					pointBookmark tempPtr = *startPtrBookmark;
 					long j = 0;
-					for (; tempPtr != NULL && j != index;)
+					for (; tempPtr != NULL && j != atoi(args[2]);)
 					{
 						tempPtr = tempPtr->pointNext;
 						j++;
@@ -828,27 +805,26 @@ void reqOfBmark(char *args[], pointBookmark *startPtrBookmark, int testCondition
 			char *exec;
 			char path[PATH_MAX + 1];
 			char firstArgument[50];
-			long lengthOfFirstArgument = strlen(args[numOfArgs - 1]);
 
 			strcpy(firstArgument, args[1]);
 			long t = 0;
 
-			if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] != '\"')
+			if (firstArgument[0] == '\"' && firstArgument[strlen(args[numOfArgs - 1]) - 1] != '\"')
 			{
 				t = 0;
-				while (t < lengthOfFirstArgument - 1)
+				while (t < strlen(args[numOfArgs - 1]) - 1)
 				{
 					firstArgument[t] = firstArgument[t + 1];
 					t++;
 				}
-				firstArgument[lengthOfFirstArgument - 1] = '\0';
+				firstArgument[strlen(args[numOfArgs - 1]) - 1] = '\0';
 			}
-			else if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] == '\"')
+			else if (firstArgument[0] == '\"' && firstArgument[strlen(args[numOfArgs - 1]) - 1] == '\"')
 			{
-				firstArgument[lengthOfFirstArgument - 1] = '\0';
+				firstArgument[strlen(args[numOfArgs - 1]) - 1] = '\0';
 
 				t = 0;
-				while (t < lengthOfFirstArgument - 1)
+				while (t < strlen(args[numOfArgs - 1]) - 1)
 				{
 					firstArgument[t] = firstArgument[t + 1];
 					t++;
@@ -1109,7 +1085,6 @@ void inputOfConfiguration(char *args[], int testCondition)
 	{
 		long i = 0;
 		long a;
-		long counter;
 		long flag = 0;
 		while (i < numOfArgs)
 		{
@@ -1117,7 +1092,6 @@ void inputOfConfiguration(char *args[], int testCondition)
 			{
 				args[i] = NULL;
 				a = i;
-				counter = i + 1;
 				flag = 1;
 				break;
 			}
@@ -1126,7 +1100,7 @@ void inputOfConfiguration(char *args[], int testCondition)
 
 		if (flag != 0)
 		{
-			i = counter;
+			i = a + 1;
 			while (i < numOfArgs)
 			{
 				args[i] = NULL;
