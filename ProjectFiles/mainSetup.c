@@ -272,6 +272,9 @@ void append(ListProcessPtr *sPtr, pid_t pid, char nameOfprog[], int testConditio
 
 void appendBM(pointBookmark *PointerB, char nameOfprog[], int testCondition)
 {
+    int i;
+    for (i=0;i<10 ; i++){
+	}
 	int test = 0;
 	if (test == testCondition)
 	{
