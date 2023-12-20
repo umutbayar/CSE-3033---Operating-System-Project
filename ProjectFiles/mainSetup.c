@@ -50,18 +50,18 @@ typedef struct history History;
 typedef History *HistoryPtr;
 
 void setup(char inputBuffer[], char *args[], int *background);
-int findpathof(char *pth, const char *exe);
+long findpathof(char *pth, const char *exe);
 void insert(ListProcessPtr *sPtr, pid_t pid, char progName[]);
 void insertBookmark(bookmarkPtr *bPtr, char progName[]);
 void deleteStoppedList(ListProcessPtr *currentPtr);
-int killAllChildProcess(pid_t ppid);
+void killAllChildProcess(pid_t ppid);
 void childSignalHandler(int signum);
 void sigtstpHandler();
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
 void printSearchCommand(char *fileName, char *pattern);
 void listFilesRecursively(char *basePath, char *pattern);
-int checkSearchArguments(char *args[]);
+long checkSearchArguments(char *args[]);
 void formatInput(char *args[]);
 void searchCommand(char *args[]);
 int checkIORedirection(char *args[]);
@@ -141,7 +141,7 @@ void setup(char inputBuffer[], char *args[], int *background)
 	numOfArgs = ct;
 }
 
-int findpathof(char *pth, const char *exe)
+long findpathof(char *pth, const char *exe)
 {
 	char *searchpath;
 	char *beg, *end;
@@ -331,7 +331,7 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 	}
 }
 
-int killAllChildProcess(pid_t ppid)
+void killAllChildProcess(pid_t ppid)
 {
 	char *buff = NULL;
 	size_t len = 255;
@@ -870,7 +870,7 @@ void listFilesRecursively(char *basePath, char *pattern)
 	closedir(dir);
 }
 
-int checkSearchArguments(char *args[])
+long checkSearchArguments(char *args[])
 {
 
 	if (numOfArgs < 2)
@@ -881,7 +881,7 @@ int checkSearchArguments(char *args[])
 	else if (numOfArgs == 2)
 	{
 
-		int length = strlen(args[1]);
+		long length = strlen(args[1]);
 		char pattern[100];
 		strcpy(pattern, args[1]);
 
@@ -893,7 +893,7 @@ int checkSearchArguments(char *args[])
 	}
 	else if (numOfArgs == 3)
 	{
-		int length = strlen(args[2]);
+		long length = strlen(args[2]);
 		char pattern[100];
 		strcpy(pattern, args[2]);
 
@@ -923,7 +923,7 @@ void searchCommand(char *args[])
 	if (checkSearchArguments(args) != 0)
 		return;
 
-	int i = 0;
+	long i = 0;
 	while (args[i] != NULL)
 	{
 		i++;
@@ -990,10 +990,10 @@ void searchCommand(char *args[])
 void formatInput(char *args[])
 {
 
-	int i = 0;
-	int a;
-	int counter;
-	int flag = 0;
+	long i = 0;
+	long a;
+	long counter;
+	long flag = 0;
 	for (i = 0; i < numOfArgs; i++)
 	{
 		if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0 || strcmp(args[i], "2>>") == 0)
@@ -1017,7 +1017,7 @@ void formatInput(char *args[])
 	numOfArgs = numOfArgs - (numOfArgs - a);
 }
 
-int checkIORedirection(char *args[])
+long checkIORedirection(char *args[])
 {
 	if (numOfArgs == 2 && strcmp(args[0], "io") == 0 && strcmp(args[1], "-h") == 0)
 	{
