@@ -14,11 +14,6 @@
 #include <dirent.h>
 #include <signal.h>
 
-#define PATH_MAX 4096
-#define ERROR_CHECK_ARGUMENTS "Please check your arguments!!\n"
-#define ERROR_OPEN_DIRECTORY "Could not open current directory\n"
-#define ERROR_GETCWD "getcwd() error\n"
-#define ERROR_TWO_WAYS "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"
 
 struct listProcess
 {
