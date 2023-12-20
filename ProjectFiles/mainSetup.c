@@ -15,10 +15,10 @@
 #include <signal.h>
 
 #define PATH_MAX 4096
-#define ERROR_CHECK_ARGUMENTS "Check your arguments!\n"
-#define ERROR_OPEN_DIRECTORY "Did not open current directory\n"
-#define ERROR_GETCWD "Error getcwd()\n"
-#define ERROR_TWO_WAYS "You should use these commands:\nsearch 'command'\nsearch 'option' 'command'\n"
+#define ERROR_CHECK_ARGUMENTS "Please check your arguments!!\n"
+#define ERROR_OPEN_DIRECTORY "Could not open current directory\n"
+#define ERROR_GETCWD "getcwd() error\n"
+#define ERROR_TWO_WAYS "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"
 
 struct listProcess
 {
@@ -87,7 +87,7 @@ void setup(char inputBuffer[], char *args[], int *background)
 
 	if ((length < 0) && (errno != EINTR))
 	{
-		fprintf(stderr, "%s", "Reading the error\n");
+		fprintf(stderr, "%s", "error reading the command\n");
 		exit(-1);
 	}
 
@@ -221,7 +221,7 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 
 	if (newPtr == NULL)
 	{
-		fprintf(stderr, "%s", "Memory did not use now\n");
+		fprintf(stderr, "%s", "No memory available\n");
 	}
 	else
 	{
@@ -259,7 +259,7 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 
 	if (newPtr == NULL)
 	{
-		fprintf(stderr, "%s", "Memory did not use now\n");
+		fprintf(stderr, "%s", "No memory available\n");
 	}
 	else
 	{
@@ -393,7 +393,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 			}
 			else
 			{
-				fprintf(stderr, "%s", "File is did not open\n");
+				fprintf(stderr, "%s", "Failed to open the file given as input...\n");
 				return;
 			}
 
@@ -411,7 +411,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 			}
 			else
 			{
-				fprintf(stderr, "%s", "Ýnput file not closed\n");
+				fprintf(stderr, "%s", "Failed to close the input file...\n");
 				return;
 			}
 
@@ -562,7 +562,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	}
 	else if (childPid == -1)
 	{
-		fprintf(stderr, "%s", "Failed fork() fucntion!\n");
+		fprintf(stderr, "%s", "fork() function is failed!\n");
 		return;
 	}
 	else
@@ -572,7 +572,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 			setpgid(childPid, childPid);
 			fgProcessPid = childPid;
 			if (childPid != waitpid(childPid, NULL, WUNTRACED))
-				fprintf(stderr, "%s", "Parent failed due to a signal or error while waiting for her child !!!\n");
+				fprintf(stderr, "%s", "Parent failed while waiting the child due to a signal or error!!!\n");
 		}
 		else
 		{
@@ -605,7 +605,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		for (index = 0; index < length; index++)
 			if (!isdigit(temp[index]))
 			{
-				fprintf(stderr, "%s", "Check arguments !\n");
+				fprintf(stderr, "%s", "Please check your arguments !\n");
 				arg2IsInt = 1;
 			}
 		if (arg2IsInt == 1)
@@ -649,7 +649,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 					}
 					else
 					{
-						fprintf(stderr, "%s", "This directory is wrong directory.\n");
+						fprintf(stderr, "%s", "There is no bookmark with this index.\n");
 					}
 				}
 				else
@@ -661,7 +661,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			}
 			else
 			{
-				fprintf(stderr, "%s", "Empty list\n");
+				fprintf(stderr, "%s", "List is empty\n");
 			}
 			return;
 		}
@@ -704,12 +704,12 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 				}
 				else
 				{
-					fprintf(stderr, "%s", "This directory is wrong directory.\n");
+					fprintf(stderr, "%s", "There is no bookmark in this index.\n");
 				}
 			}
 			else
 			{
-				fprintf(stderr, "%s", "Empty list);
+				fprintf(stderr, "%s", "List is empty\n");
 			}
 			return;
 		}
@@ -742,7 +742,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	}
 	else if (i == 1)
 	{
-		fprintf(stderr, "Bookmark usage wrong! You can type \"bookmark -h\" to see the correct usage.\n");
+		fprintf(stderr, "Wrong usage of Bookmark! You can type \"bookmark -h\" to see the correct usage.\n");
 		return;
 	}
 	else if (strlen(args[1]) < strlen(tempStringComp) ? 0 : memcmp(tempStringComp, args[1], strlen(tempStringComp)) == 0)
@@ -757,7 +757,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 		else
 		{
-			fprintf(stderr, "%s", "Bookmark usage wrong ");
+			fprintf(stderr, "%s", "Wrong usage of Bookmark! ");
 			return;
 		}
 
@@ -793,7 +793,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 		else
 		{
-			fprintf(stderr, "%s", "There is not such a command  !\n");
+			fprintf(stderr, "%s", "There is not such a command to store !\n");
 			return;
 		}
 
@@ -809,7 +809,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	}
 	else
 	{
-		fprintf(stderr, "%s", "Bookmark usage wrong! ");
+		fprintf(stderr, "%s", "Wrong usage of Bookmark! ");
 		return;
 	}
 }
@@ -939,13 +939,13 @@ void searchCommand(char *args[])
 
 	if (i < 2 || i > 3)
 	{
-		fprintf(stderr, "You should use these commands:\nsearch 'command'\nsearch 'option' 'command'\n");
+		fprintf(stderr, "2 ways to use this command:\nsearch 'command'\nsearch 'option' 'command'\n");
 		return;
 	}
 
 	if (i == 3 && strcmp(args[1], "-r") != 0)
 	{
-		fprintf(stderr, "Check your arguments!!\n");
+		fprintf(stderr, "Please check your arguments!!\n");
 		return;
 	}
 
@@ -957,7 +957,7 @@ void searchCommand(char *args[])
 
 		if (dr == NULL)
 		{
-			fprintf(stderr, "Did not open current directory\n");
+			fprintf(stderr, "Could not open current directory\n");
 			return;
 		}
 
@@ -977,7 +977,7 @@ void searchCommand(char *args[])
 
 					if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
 					{
-						fprintf(stderr, "Check your arguments!You need to give your pattern between \" \"\n");
+						fprintf(stderr, "Please check your arguments!! You need to give your pattern between \" \"\n");
 						closedir(dr);
 						return;
 					}
@@ -999,7 +999,7 @@ void searchCommand(char *args[])
 		}
 		else
 		{
-			fprintf(stderr, "Error getcwd()\n");
+			fprintf(stderr, "getcwd() error\n");
 		}
 	}
 }
@@ -1058,27 +1058,50 @@ long checkIORedirection(char *args[])
 			io = 1;
 		}
 	}
-	if (io == 1)
-	{
 
-		if (strcmp(args[0], "bookmark") == 0 || strcmp(args[0], "search") == 0)
+	if (io != 1)
+	{
+		return 0;
+	}
+	else
+	{
+		if (strcmp(args[0], "bookmark") != 0 && strcmp(args[0], "search") != 0)
+		{
+		}
+		else
 		{
 			fprintf(stderr, "I/O redirection is not valid for \" %s \" command!!\n", args[0]);
 			return 1;
 		}
 	}
-	else
-	{
-		return 0;
-	}
 
 	long i;
 	for (i = 0; i < numOfArgs; i++)
 	{
-		if (strcmp(args[i], "<") == 0 && numOfArgs > 3 && strcmp(args[i + 2], ">") == 0)
+		
+		if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
-			if (i + 3 >= numOfArgs)
-			{
+			if (i + 1 < numOfArgs) {
+
+			}
+			else {
+				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
+				args[0] = NULL;
+				return 1;
+			}
+
+			outputRedirectFlag = 1;
+			strcpy(outputRedirectSymbol, args[i]);
+			strcpy(outputFileName, args[i + 1]);
+
+			return 0;
+		}
+		else if (strcmp(args[i], "<") == 0 && numOfArgs > 3 && strcmp(args[i + 2], ">") == 0)
+		{
+			if (i + 3 < numOfArgs) {
+
+			}
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1092,25 +1115,12 @@ long checkIORedirection(char *args[])
 
 			return 0;
 		}
-		else if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
-		{
-			if (i + 1 >= numOfArgs)
-			{
-				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
-				args[0] = NULL;
-				return 1;
-			}
-
-			outputRedirectFlag = 1;
-			strcpy(outputRedirectSymbol, args[i]);
-			strcpy(outputFileName, args[i + 1]);
-
-			return 0;
-		}
 		else if (strcmp(args[i], "<") == 0)
 		{
-			if (i + 1 >= numOfArgs)
-			{
+			if (i + 1 < numOfArgs) {
+
+			}
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1174,7 +1184,7 @@ int main(void)
 			}
 			else
 			{
-				fprintf(stderr, "%s", "Background procces running!\n");
+				fprintf(stderr, "%s", "There are processes running in the background!\n");
 			}
 		}
 		else if (strcmp(args[0], "search") == 0)
