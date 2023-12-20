@@ -937,56 +937,34 @@ void searchCommand(char *args[])
 		i++;
 	}
 
-	if (i >= 2 && i <= 3)
-	{
-	}
-	else
+	if (i < 2 || i > 3)
 	{
 		fprintf(stderr, "2 ways to use this command:\nsearch 'command'\nsearch 'option' 'command'\n");
 		return;
 	}
 
-	if (i != 3 || strcmp(args[1], "-r") == 0)
-	{
-	}
-	else
+	if (i == 3 && strcmp(args[1], "-r") != 0)
 	{
 		fprintf(stderr, "Please check your arguments!!\n");
 		return;
 	}
 
-	if (i != 2 && (i != 3 || strcmp(args[1], "-r") != 0))
-	{
-		char cwd[PATH_MAX];
-		if (getcwd(cwd, sizeof(cwd)) == NULL)
-		{
-			fprintf(stderr, "getcwd() error\n");
-		}
-		else
-		{
-			listFilesRecursively(cwd, args[2]);
-		}
-	}
-	else
+	if (i == 2 || (i == 3 && strcmp(args[1], "-r") == 0))
 	{
 		char cmd[1000];
 		struct dirent *de;
 		DIR *dr = opendir(".");
 
-		if (dr != NULL) {
-
-		}
-		else {
+		if (dr == NULL)
+		{
 			fprintf(stderr, "Could not open current directory\n");
 			return;
 		}
 
 		while ((de = readdir(dr)) != NULL)
 		{
-			if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
-
-			}
-			else {
+			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
+			{
 				char fName[50];
 				strcpy(fName, de->d_name);
 
@@ -996,21 +974,33 @@ void searchCommand(char *args[])
 					long length = strlen(args[i - 1]);
 					char pattern[100];
 					strcpy(pattern, args[i - 1]);
-					
-					if (pattern[0] == '"' && pattern[length - 1] == '"') {
 
-					}
-					else {
+					if (!(pattern[0] == '"' && pattern[length - 1] == '"'))
+					{
 						fprintf(stderr, "Please check your arguments!! You need to give your pattern between \" \"\n");
 						closedir(dr);
 						return;
 					}
+
 					printSearchCommand(de->d_name, args[i - 1]);
 				}
 			}
 		}
+
 		printf("\n");
 		closedir(dr);
+	}
+	else
+	{
+		char cwd[PATH_MAX];
+		if (getcwd(cwd, sizeof(cwd)) != NULL)
+		{
+			listFilesRecursively(cwd, args[2]);
+		}
+		else
+		{
+			fprintf(stderr, "getcwd() error\n");
+		}
 	}
 }
 
@@ -1088,14 +1078,13 @@ long checkIORedirection(char *args[])
 	long i;
 	for (i = 0; i < numOfArgs; i++)
 	{
-
+		
 		if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
-			if (i + 1 < numOfArgs)
-			{
+			if (i + 1 < numOfArgs) {
+
 			}
-			else
-			{
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1109,11 +1098,10 @@ long checkIORedirection(char *args[])
 		}
 		else if (strcmp(args[i], "<") == 0 && numOfArgs > 3 && strcmp(args[i + 2], ">") == 0)
 		{
-			if (i + 3 < numOfArgs)
-			{
+			if (i + 3 < numOfArgs) {
+
 			}
-			else
-			{
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1129,11 +1117,10 @@ long checkIORedirection(char *args[])
 		}
 		else if (strcmp(args[i], "<") == 0)
 		{
-			if (i + 1 < numOfArgs)
-			{
+			if (i + 1 < numOfArgs) {
+
 			}
-			else
-			{
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
