@@ -23,7 +23,7 @@
 #define EMPTY_LIST "Empty list\n"
 #define ERROR_BOOKMARK "Bookmark usage wrong! "
 
-typedef struct listProcess
+struct listProcess
 {
 	short testByte;
 	long noOfProc;
@@ -31,7 +31,8 @@ typedef struct listProcess
 	char nameOfprog[120];
 	struct listProcess *pointNext;
 };
-typedef listProcess *ListProcessPtr;
+typedef struct listProcess ListProcess;
+typedef ListProcess *ListProcessPtr;
 
 struct bookmark
 {
@@ -39,7 +40,8 @@ struct bookmark
 	char nameOfprog[50];
 	struct bookmark *pointNext;
 };
-typedef bookmark *pointBookmark;
+typedef struct bookmark bookmarks;
+typedef bookmarks *pointBookmark;
 
 void setup(char inputBuffer[], char *args[], int *background);
 long pathFounder(const char *executable, char *Path, int testCondition);
