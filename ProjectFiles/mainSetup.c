@@ -296,7 +296,8 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 	if ((*currentPtr) != NULL)
 	{
 
-		if (waitpid((*currentPtr)->pid, &status, WNOHANG) != -1) {
+		if (waitpid((*currentPtr)->pid, &status, WNOHANG) != -1)
+		{
 			ListProcessPtr previousPtr = *currentPtr;
 			ListProcessPtr tempPtr = (*currentPtr)->nextPtr;
 
@@ -305,17 +306,19 @@ void deleteStoppedList(ListProcessPtr *currentPtr)
 				previousPtr = tempPtr;
 				tempPtr = tempPtr->nextPtr;
 			}
-			if (tempPtr == NULL) {
-
+			if (tempPtr == NULL)
+			{
 			}
-			else {
+			else
+			{
 				ListProcessPtr delPtr = tempPtr;
 				previousPtr->nextPtr = tempPtr->nextPtr;
 				free(delPtr);
 				deleteStoppedList(currentPtr);
 			}
 		}
-		else {
+		else
+		{
 			ListProcessPtr tempPtr = *currentPtr;
 			*currentPtr = (*currentPtr)->nextPtr;
 			free(tempPtr);
@@ -377,104 +380,109 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 	pid_t childPid;
 
 	childPid = fork();
-	if (childPid == -1)
-	{
-		fprintf(stderr, "%s", "fork() function is failed!\n");
-		return;
-	}
-	else if (childPid != 0)
-	{
-		if (*background == 1)
-		{
-			waitpid(childPid, NULL, WNOHANG);
-			setpgid(childPid, childPid);
-			insert(&(*sPtr), childPid, args[0]);
-			processNumber++;
-		}
-		else
-		{
-			setpgid(childPid, childPid);
-			fgProcessPid = childPid;
-			if (childPid != waitpid(childPid, NULL, WUNTRACED))
-				fprintf(stderr, "%s", "Parent failed while waiting the child due to a signal or error!!!\n");
-		}
-	}
-	else
+
+	if (childPid == 0)
 	{
 		if (inputRedirectFlag == 1)
 		{
 
 			long fdInput;
+			fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-			if (inputRedirectFlag == 1)
+			if (fdInput != -1)
 			{
-				fdInput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-				if (fdInput == -1)
-				{
-					fprintf(stderr, "%s", "Failed to open the file given as input...\n");
+			}
+			else
+			{
+				fprintf(stderr, "%s", "Failed to open the file given as input...\n");
+				return;
+			}
 
-					return;
-				}
-				if (dup2(fdInput, STDIN_FILENO) == -1)
-				{
-					fprintf(stderr, "%s", "Failed to redirect standard input...\n");
-					return;
-				}
+			if (dup2(fdInput, STDIN_FILENO) != -1)
+			{
+			}
+			else
+			{
+				fprintf(stderr, "%s", "Failed to redirect standard input...\n");
+				return;
+			}
 
-				if (close(fdInput) == -1)
-				{
-					fprintf(stderr, "%s", "Failed to close the input file...\n");
-					return;
-				}
+			if (close(fdInput) != -1)
+			{
+			}
+			else
+			{
+				fprintf(stderr, "%s", "Failed to close the input file...\n");
+				return;
 			}
 
 			if (outputRedirectFlag == 1)
 			{
 				long fdOutput;
 
-				if (strcmp(outputRedirectSymbol, ">") == 0)
+				if (strcmp(outputRedirectSymbol, "2>") == 0)
 				{
-
 					fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-					if (fdOutput == -1)
+
+					if (fdOutput != -1)
+					{
+					}
+					else
 					{
 						fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
 						return;
 					}
 
-					if (dup2(fdOutput, STDOUT_FILENO) == -1)
+					if (dup2(fdOutput, STDERR_FILENO) != -1)
 					{
-						fprintf(stderr, "%s", "Failed to redirect standard output...\n");
+					}
+					else
+					{
+						fprintf(stderr, "%s", "Failed to redirect standard error...\n");
 						return;
 					}
 				}
 				else if (strcmp(outputRedirectSymbol, ">>") == 0)
 				{
-
 					fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-					if (fdOutput == -1)
+
+					if (fdOutput != -1)
+					{
+					}
+					else
 					{
 						fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
 						return;
 					}
 
-					if (dup2(fdOutput, STDOUT_FILENO) == -1)
+					if (dup2(fdOutput, STDOUT_FILENO) != -1)
+					{
+					}
+					else
 					{
 						fprintf(stderr, "%s", "Failed to redirect standard output...\n");
 						return;
 					}
 				}
-				else if (strcmp(outputRedirectSymbol, "2>") == 0)
+				else if (strcmp(outputRedirectSymbol, ">") == 0)
 				{
 					fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-					if (fdOutput == -1)
+
+					if (fdOutput != -1)
+					{
+					}
+					else
 					{
 						fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
 						return;
 					}
-					if (dup2(fdOutput, STDERR_FILENO) == -1)
+
+					if (dup2(fdOutput, STDOUT_FILENO) != -1)
 					{
-						fprintf(stderr, "%s", "Failed to redirect standard error...\n");
+					}
+					else
+					{
+						fprintf(stderr, "%s", "Failed to redirect standard output...\n");
 						return;
 					}
 				}
@@ -484,54 +492,96 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 		{
 			long fdOutput;
 
-			if (strcmp(outputRedirectSymbol, ">") == 0)
-			{
-
-				fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-				if (fdOutput == -1)
-				{
-					fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
-					return;
-				}
-
-				if (dup2(fdOutput, STDOUT_FILENO) == -1)
-				{
-					fprintf(stderr, "%s", "Failed to redirect standard output...\n");
-					return;
-				}
-			}
-			else if (strcmp(outputRedirectSymbol, ">>") == 0)
-			{
-
-				fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-				if (fdOutput == -1)
-				{
-					fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
-					return;
-				}
-
-				if (dup2(fdOutput, STDOUT_FILENO) == -1)
-				{
-					fprintf(stderr, "%s", "Failed to redirect standard output...\n");
-					return;
-				}
-			}
-			else if (strcmp(outputRedirectSymbol, "2>") == 0)
+			if (strcmp(outputRedirectSymbol, "2>") == 0)
 			{
 				fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-				if (fdOutput == -1)
+
+				if (fdOutput != -1)
+				{
+				}
+				else
 				{
 					fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
 					return;
 				}
-				if (dup2(fdOutput, STDERR_FILENO) == -1)
+
+				if (dup2(fdOutput, STDERR_FILENO) != -1)
+				{
+				}
+				else
 				{
 					fprintf(stderr, "%s", "Failed to redirect standard error...\n");
 					return;
 				}
 			}
+			else if (strcmp(outputRedirectSymbol, ">>") == 0)
+			{
+				fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_APPEND, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+				if (fdOutput != -1)
+				{
+				}
+				else
+				{
+					fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
+					return;
+				}
+
+				if (dup2(fdOutput, STDOUT_FILENO) != -1)
+				{
+				}
+				else
+				{
+					fprintf(stderr, "%s", "Failed to redirect standard output...\n");
+					return;
+				}
+			}
+			else if (strcmp(outputRedirectSymbol, ">") == 0)
+			{
+				fdOutput = open(outputFileName, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+				if (fdOutput != -1)
+				{
+				}
+				else
+				{
+					fprintf(stderr, "%s", "Failed to create or append to the file given as input...\n");
+					return;
+				}
+
+				if (dup2(fdOutput, STDOUT_FILENO) != -1)
+				{
+				}
+				else
+				{
+					fprintf(stderr, "%s", "Failed to redirect standard output...\n");
+					return;
+				}
+			}
 		}
 		execv(path, args);
+	}
+	else if (childPid == -1)
+	{
+		fprintf(stderr, "%s", "fork() function is failed!\n");
+		return;
+	}
+	else
+	{
+		if (*background != 1)
+		{
+			setpgid(childPid, childPid);
+			fgProcessPid = childPid;
+			if (childPid != waitpid(childPid, NULL, WUNTRACED))
+				fprintf(stderr, "%s", "Parent failed while waiting the child due to a signal or error!!!\n");
+		}
+		else
+		{
+			waitpid(childPid, NULL, WNOHANG);
+			setpgid(childPid, childPid);
+			insert(&(*sPtr), childPid, args[0]);
+			processNumber++;
+		}
 	}
 }
 
