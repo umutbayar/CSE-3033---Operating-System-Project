@@ -1,3 +1,6 @@
+/*Programmer 1 = Umut Bayar 150120043
+  Programmer 2 = Niyazi Ozan Ateş 150121991
+  Programmer 3= Hasan Özeren 150121036*/
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/stat.h>
