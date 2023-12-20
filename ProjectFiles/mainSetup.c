@@ -22,25 +22,24 @@
 #define ERROR_MEMORY "Did not use memory\n"
 #define EMPTY_LIST "Empty list\n"
 #define ERROR_BOOKMARK "Bookmark usage wrong! "
-struct listProcess
-{
 
+typedef struct listProcess
+{
+	short testByte;
 	long noOfProc;
 	pid_t pid;
 	char nameOfprog[120];
 	struct listProcess *pointNext;
 };
-typedef struct listProcess ListProcess;
-typedef ListProcess *ListProcessPtr;
+typedef listProcess *ListProcessPtr;
 
 struct bookmark
 {
-
+	short testByte;
 	char nameOfprog[50];
 	struct bookmark *pointNext;
 };
-typedef struct bookmark bookmarks;
-typedef bookmarks *pointBookmark;
+typedef bookmark *pointBookmark;
 
 void setup(char inputBuffer[], char *args[], int *background);
 long pathFounder(const char *executable, char *Path, int testCondition);
