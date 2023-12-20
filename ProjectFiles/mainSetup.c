@@ -1058,27 +1058,50 @@ long checkIORedirection(char *args[])
 			io = 1;
 		}
 	}
-	if (io == 1)
-	{
 
-		if (strcmp(args[0], "bookmark") == 0 || strcmp(args[0], "search") == 0)
+	if (io != 1)
+	{
+		return 0;
+	}
+	else
+	{
+		if (strcmp(args[0], "bookmark") != 0 && strcmp(args[0], "search") != 0)
+		{
+		}
+		else
 		{
 			fprintf(stderr, "I/O redirection is not valid for \" %s \" command!!\n", args[0]);
 			return 1;
 		}
 	}
-	else
-	{
-		return 0;
-	}
 
 	long i;
 	for (i = 0; i < numOfArgs; i++)
 	{
-		if (strcmp(args[i], "<") == 0 && numOfArgs > 3 && strcmp(args[i + 2], ">") == 0)
+		
+		if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
 		{
-			if (i + 3 >= numOfArgs)
-			{
+			if (i + 1 < numOfArgs) {
+
+			}
+			else {
+				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
+				args[0] = NULL;
+				return 1;
+			}
+
+			outputRedirectFlag = 1;
+			strcpy(outputRedirectSymbol, args[i]);
+			strcpy(outputFileName, args[i + 1]);
+
+			return 0;
+		}
+		else if (strcmp(args[i], "<") == 0 && numOfArgs > 3 && strcmp(args[i + 2], ">") == 0)
+		{
+			if (i + 3 < numOfArgs) {
+
+			}
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
@@ -1092,25 +1115,12 @@ long checkIORedirection(char *args[])
 
 			return 0;
 		}
-		else if (strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
-		{
-			if (i + 1 >= numOfArgs)
-			{
-				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
-				args[0] = NULL;
-				return 1;
-			}
-
-			outputRedirectFlag = 1;
-			strcpy(outputRedirectSymbol, args[i]);
-			strcpy(outputFileName, args[i + 1]);
-
-			return 0;
-		}
 		else if (strcmp(args[i], "<") == 0)
 		{
-			if (i + 1 >= numOfArgs)
-			{
+			if (i + 1 < numOfArgs) {
+
+			}
+			else {
 				fprintf(stderr, "%s", "Syntax error. You can type \"io -h\" to see the correct syntax.\n");
 				args[0] = NULL;
 				return 1;
