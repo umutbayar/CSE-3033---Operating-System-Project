@@ -52,7 +52,8 @@ typedef History *HistoryPtr;
 
 void setup(char inputBuffer[], char *args[], int *background);									 //----------------------------------------------------------------------
 int findpathof(char *pth, const char *exe);														 //-----------------------------------------------
-void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice); //-----------------------------------------------
+void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]);
+void insertBookmark(bookmarkPtr *bPtr , char progName[]); //-----------------------------------------------
 void deleteStoppedList(ListProcessPtr *currentPtr);												 // Recursion
 int killAllChildProcess(pid_t ppid);															 // Recursion
 void childSignalHandler(int signum);															 // Elleşme
@@ -239,78 +240,71 @@ int findpathof(char *pth, const char *exe)
 	return found;
 }
 
-void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], long choice)
-{
-
-	if (choice)
-	{
-		ListProcessPtr newPtr = malloc(sizeof(ListProcess)); // Create Node
-
-		if (newPtr != NULL)
-		{
-			strcpy(newPtr->progName, progName);
-			newPtr->processNumber = processNumber;
-			newPtr->pid = pid;
-			newPtr->nextPtr = NULL;
-
-			ListProcessPtr previousPtr = NULL;
-			ListProcessPtr currentPtr = *sPtr;
-
-			while (currentPtr != NULL)
-			{
-				previousPtr = currentPtr;
-				currentPtr = currentPtr->nextPtr;
-			}
-
-			if (previousPtr == NULL)
-			{ // inser to the beginning
-				newPtr->nextPtr = *sPtr;
-				*sPtr = newPtr;
-			}
-			else
-			{
-				previousPtr->nextPtr = newPtr;
-				newPtr->nextPtr = currentPtr;
-			}
+//This is insert function for backgrounds processes
+void insert(ListProcessPtr *sPtr , pid_t pid , char progName[]){
+	
+	ListProcessPtr newPtr = malloc(sizeof(ListProcess)); // Create Node
+	
+	if(newPtr != NULL){
+		strcpy(newPtr->progName, progName);
+		newPtr->processNumber = processNumber ;
+		newPtr->pid = pid;
+		newPtr->nextPtr = NULL;
+		
+		ListProcessPtr previousPtr = NULL;
+		ListProcessPtr currentPtr = *sPtr;
+		
+		while(currentPtr != NULL){
+			previousPtr = currentPtr;
+			currentPtr = currentPtr->nextPtr;
 		}
-		else
-		{
-			fprintf(stderr, "%s", "No memory available\n");
-		}
+		
+		if(previousPtr == NULL){ //insert to the beginning
+			newPtr->nextPtr = *sPtr;
+			*sPtr = newPtr;
+		}else{
+			previousPtr->nextPtr = newPtr;
+			newPtr->nextPtr = currentPtr;
+			
+		}		
 	}
-	else
-	{
-		bookmarkPtr newPtr = malloc(sizeof(bookmarks));
-
-		if (newPtr != NULL)
-		{
-			strcpy(newPtr->progName, progName);
-			newPtr->nextPtr = NULL;
-			bookmarkPtr previousPtr = NULL;
-			bookmarkPtr currentPtr = *bPtr;
-
-			while (currentPtr != NULL)
-			{
-				previousPtr = currentPtr;
-				currentPtr = currentPtr->nextPtr;
-			}
-
-			if (previousPtr == NULL)
-			{ // inser to the beginning
-				newPtr->nextPtr = *bPtr;
-				*bPtr = newPtr;
-			}
-			else
-			{
-				previousPtr->nextPtr = newPtr;
-				newPtr->nextPtr = currentPtr;
-			}
-		}
-		else
-		{
-			fprintf(stderr, "%s", "No memory available\n");
-		}
+	else{
+		fprintf(stderr, "%s", "No memory available\n");
 	}
+		
+}
+
+// inserting program into bookmark struct
+void insertBookmark(bookmarkPtr *bPtr , char progName[]){
+
+	bookmarkPtr newPtr = malloc(sizeof(bookmarks));
+
+	if(newPtr != NULL){
+		strcpy(newPtr->progName, progName);
+		newPtr->nextPtr = NULL;
+
+		bookmarkPtr previousPtr = NULL ;
+		bookmarkPtr currentPtr = *bPtr ;
+
+		while(currentPtr != NULL){
+			previousPtr = currentPtr ;
+			currentPtr = currentPtr->nextPtr ;
+		}
+
+		if(previousPtr == NULL){ //insert to the beginning
+			newPtr->nextPtr = *bPtr;
+			*bPtr = newPtr;
+		}else{
+			previousPtr->nextPtr = newPtr;
+			newPtr->nextPtr = currentPtr;
+			
+		}		
+
+	}
+	else{
+		fprintf(stderr, "%s", "No memory available\n");
+	}
+
 }
 
 // This function is for deleting dead processes from background processes list
@@ -414,7 +408,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 		{ // background Process
 			waitpid(childPid, NULL, WNOHANG);
 			setpgid(childPid, childPid); // This will put that process into its process group
-			inserting(&(*sPtr), childPid, NULL, args[0], 0);
+			insert(&(*sPtr),childPid,args[0]);
 			processNumber++;
 		}
 		else
@@ -613,11 +607,11 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		{
 			while (tempPointer->nextPtr != NULL)
 			{
-				printf("%d %s\n", count, tempPointer->progName);
+				printf("%ld %s\n", count, tempPointer->progName);
 				count++;
 				tempPointer = tempPointer->nextPtr;
 			}
-			printf("%d %s\n", count, tempPointer->progName);
+			printf("%ld %s\n", count, tempPointer->progName);
 		}
 	}
 	else if ((strcmp(args[1], "-i") == 0) && i == 3)
@@ -773,7 +767,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			strcat(exe, " ");
 		}
 		pid_t tempPid;
-		inserting(NULL, tempPid, startPtrBookmark, exe, 1);
+		insertBookmark(startPtrBookmark,exe);
 		exe[0] = '\0';
 	}
 	else
