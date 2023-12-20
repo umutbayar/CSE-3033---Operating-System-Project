@@ -58,12 +58,12 @@ int killAllChildProcess(pid_t ppid);															 // Recursion
 void childSignalHandler(int signum);															 // Elleşme
 void sigtstpHandler();																			 // Elleşme
 void createProcess(char path[], char *args[], int *background, ListProcessPtr *sPtr);			 // Ana Fonksiyon gibi birşey
-void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);
-void printSearchCommand(char *fileName, char *pattern);
-void listFilesRecursively(char *basePath, char *pattern);
-void processCommand(char *args[], int choice);
-int checkIORedirection(char *args[]);
-int main(void); //----------------------------------------------------------------------
+void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);								 // Büyük Fonksiyon
+void printSearchCommand(char *fileName, char *pattern);											 // 2 yerde kullanılıyo
+void listFilesRecursively(char *basePath, char *pattern);										 // Recursion
+void processCommand(char *args[], int choice);													 // 3ü 1 arası bir fonsiyon ve mainde 2 yerde kullanılıyo
+int checkIORedirection(char *args[]);															 // ???
+int main(void);																					 //----------------------------------------------------------------------
 
 char inputFileName[20];
 char outputFileName[20];
@@ -72,7 +72,7 @@ char outputRedirectSymbol[3] = {"00"};
 long inputRedirectFlag;
 long outputRedirectFlag;
 
-int numOfArgs = 0;		//
+long numOfArgs = 0;		//
 long processNumber = 1; //
 
 pid_t parentPid; // stores the parent pid
@@ -160,7 +160,7 @@ int findpathof(char *pth, const char *exe)
 	char *searchpath;
 	char *beg, *end;
 	long stop, found;
-	int len;
+	long len;
 
 	if (strchr(exe, '/') != NULL)
 	{
@@ -237,7 +237,7 @@ int findpathof(char *pth, const char *exe)
 	return found;
 }
 
-void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], int choice)
+void inserting(ListProcessPtr *sPtr, pid_t pid, bookmarkPtr *bPtr, char progName[], long choice)
 {
 
 	if (choice)
@@ -564,9 +564,9 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 {
 
 	char *tempStringComp = "\"";
-	int arg2IsInt = 0;
+	long arg2IsInt = 0;
 
-	int i = 0;
+	long i = 0;
 	while (args[i] != NULL)
 	{
 		i++;
@@ -576,7 +576,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 		char *temp = args[2];
 
-		int length, index;
+		long length, index;
 		length = strlen(temp);
 		for (index = 0; index < length; index++)
 			if (!isdigit(temp[index]))
@@ -603,7 +603,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	else if ((strcmp(args[1], "-l") == 0) && i == 2)
 	{
 
-		int count = 0;
+		long count = 0;
 		bookmarkPtr tempPointer = *startPtrBookmark;
 		if (*startPtrBookmark == NULL)
 			fprintf(stderr, "%s", "List is empty\n");
@@ -645,8 +645,8 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 				{
 					char exe[90];
 					strcpy(exe, tempPtr->progName);
-					int length = strlen(exe);
-					int i = 0;
+					long length = strlen(exe);
+					long i = 0;
 					exe[length - 2] = '\0';
 					for (i = 0; i < length; i++)
 					{
@@ -718,7 +718,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	{
 
 		// This is for checking the last char of command
-		int length = strlen(args[numOfArgs - 1]);
+		long length = strlen(args[numOfArgs - 1]);
 		char command[100];
 		strcpy(command, args[numOfArgs - 1]);
 
@@ -732,10 +732,10 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		char *exec;
 		char path[PATH_MAX + 1];
 		char firstArgument[50];
-		int lengthOfFirstArgument = strlen(args[numOfArgs - 1]);
+		long lengthOfFirstArgument = strlen(args[numOfArgs - 1]);
 
 		strcpy(firstArgument, args[1]);
-		int t = 0;
+		long t = 0;
 
 		if (firstArgument[0] == '\"' && firstArgument[lengthOfFirstArgument - 1] == '\"')
 		{ // for example "ls"
@@ -826,10 +826,10 @@ void printSearchCommand(char *fileName, char *pattern)
 
 		char lineNumber[15] = {0};
 
-		int i = 0;
+		long i = 0;
 
-		int length = strlen(allLine);
-		int digitNum = 1;
+		long length = strlen(allLine);
+		long digitNum = 1;
 
 		for (i = 0; i < length; i++)
 		{
@@ -921,7 +921,7 @@ void processCommand(char *args[], int choice)
 		else if (numOfArgs == 2)
 		{ // nonrecursive check
 
-			int length = strlen(args[1]);
+			long length = strlen(args[1]);
 			char pattern[100];
 			strcpy(pattern, args[1]);
 
@@ -933,7 +933,7 @@ void processCommand(char *args[], int choice)
 		}
 		else if (numOfArgs == 3)
 		{ // recursive check
-			int length = strlen(args[2]);
+			long length = strlen(args[2]);
 			char pattern[100];
 			strcpy(pattern, args[2]);
 
@@ -952,7 +952,7 @@ void processCommand(char *args[], int choice)
 
 		if (valid)
 			return;
-		int i = 0;
+		long i = 0;
 		while (args[i] != NULL)
 		{
 			i++;
@@ -1026,10 +1026,10 @@ void processCommand(char *args[], int choice)
 	}
 	else
 	{
-		int i = 0;
-		int a;
-		int counter;
-		int flag = 0;
+		long i = 0;
+		long a;
+		long counter;
+		long flag = 0;
 		for (i = 0; i < numOfArgs; i++)
 		{
 			if (strcmp(args[i], "<") == 0 || strcmp(args[i], ">") == 0 || strcmp(args[i], ">>") == 0 || strcmp(args[i], "2>") == 0)
@@ -1067,8 +1067,8 @@ int checkIORedirection(char *args[])
 		return 1;
 	}
 
-	int a;
-	int io;
+	long a;
+	long io;
 	for (a = 0; a < numOfArgs; a++)
 	{
 		if (strcmp(args[a], "<") == 0 || strcmp(args[a], ">") == 0 || strcmp(args[a], ">>") == 0 || strcmp(args[a], "2>") == 0 || strcmp(args[a], "2>>") == 0)
@@ -1090,7 +1090,7 @@ int checkIORedirection(char *args[])
 		return 0;
 	}
 
-	int i;
+	long i;
 	// Check arguments
 	for (i = 0; i < numOfArgs; i++)
 	{
