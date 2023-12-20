@@ -61,7 +61,7 @@ void createProcess(char path[], char *args[], int *background, ListProcessPtr *s
 void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark);								 // Büyük Fonksiyon
 void printSearchCommand(char *fileName, char *pattern);											 // 2 yerde kullanılıyo
 void listFilesRecursively(char *basePath, char *pattern);										 // Recursion
-void formatInput(char *args[]);
+int checkSearchArguments(char *args[]);
 void formatInput(char *args[]);
 void searchCommand(char *args[]);												 // 3ü 1 arası bir fonsiyon ve mainde 2 yerde kullanılıyo
 int checkIORedirection(char *args[]);															 // ???
