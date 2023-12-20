@@ -19,7 +19,9 @@
 #define ERROR_OPEN_DIRECTORY "Did not open directory\n"
 #define ERROR_GETCWD "Error getcwd() \n"
 #define ERROR_TWO_WAYS "2 ways to use this command :\nsearch 'command'\nsearch 'option' 'command'\n"
-
+#define ERROR_MEMORY "Did not use memory\n
+#define EMPTY_LIST "Empty list\n"
+#define ERROR_BOOKMARK  "Bookmark usage wrong! "
 struct listProcess
 {
 
@@ -221,7 +223,7 @@ void insert(ListProcessPtr *sPtr, pid_t pid, char progName[])
 
 	if (newPtr == NULL)
 	{
-		fprintf(stderr, "%s", "Did not use memory\n");
+		fprintf(stderr, "%s", ERROR_MEMORY);
 	}
 	else
 	{
@@ -259,7 +261,7 @@ void insertBookmark(bookmarkPtr *bPtr, char progName[])
 
 	if (newPtr == NULL)
 	{
-		fprintf(stderr, "%s", "Did not use memory\n");
+		fprintf(stderr, "%s", ERROR_MEMORY);
 	}
 	else
 	{
@@ -604,7 +606,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		for (index = 0; index < strlen(temp); index++)
 			if (!isdigit(temp[index]))
 			{
-				fprintf(stderr, "%s", "Check your arguments !\n");
+				fprintf(stderr, "%s", ERROR_CHECK_ARGUMENTS);
 				arg2IsInt = 1;
 			}
 		if (arg2IsInt == 1)
@@ -660,7 +662,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			}
 			else
 			{
-				fprintf(stderr, "%s", "Empty list\n");
+				fprintf(stderr, "%s", EMPTY_LIST);
 			}
 			return;
 		}
@@ -707,7 +709,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 			}
 			else
 			{
-				fprintf(stderr, "%s", "Empty list\n");
+				fprintf(stderr, "%s", EMPTY_LIST);
 			}
 			return;
 		}
@@ -730,7 +732,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 		else
 		{
-			fprintf(stderr, "%s", "Empty list\n");
+			fprintf(stderr, "%s",EMPTY_LIST);
 		}
 	}
 	else if ((strcmp(args[1], "-h") == 0) && i == 2)
@@ -754,7 +756,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 		}
 		else
 		{
-			fprintf(stderr, "%s", "Bookmark usage wrong! ");
+			fprintf(stderr, "%s",ERROR_BOOKMARK);
 			return;
 		}
 
@@ -806,7 +808,7 @@ void bookmarkCommand(char *args[], bookmarkPtr *startPtrBookmark)
 	}
 	else
 	{
-		fprintf(stderr, "%s", "Bookmark usage wrong! ");
+		fprintf(stderr, "%s", ERROR_BOOKMARK);
 		return;
 	}
 }
@@ -934,13 +936,13 @@ void searchCommand(char *args[])
 
 	if (i < 2 || i > 3)
 	{
-		fprintf(stderr, "Use these commands:\nsearch 'command'\nsearch 'option' 'command'\n");
+		fprintf(stderr, ERROR_TWO_WAYS);
 		return;
 	}
 
 	if (i == 3 && strcmp(args[1], "-r") != 0)
 	{
-		fprintf(stderr, "Check your arguments!\n");
+		fprintf(stderr, ERROR_CHECK_ARGUMENTS);
 		return;
 	}
 
@@ -952,7 +954,7 @@ void searchCommand(char *args[])
 
 		if (dr == NULL)
 		{
-			fprintf(stderr, "Did not open directory\n");
+			fprintf(stderr, ERROR_OPEN_DIRECTORY);
 			return;
 		}
 
@@ -993,7 +995,7 @@ void searchCommand(char *args[])
 		}
 		else
 		{
-			fprintf(stderr, "Error getcwd()\n");
+			fprintf(stderr, ERROR_GETCWD);
 		}
 	}
 }
