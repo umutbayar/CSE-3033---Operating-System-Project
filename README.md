@@ -22,3 +22,8 @@ Güncel alınan 5 hatanın geçmesi için soldaki dosyalarda oluşan .vscode kla
 }
 bunu yapıştırın. Geçmesi gerekli 
 **** sample projectsdeki mainSetup1 bakacağımız kod. Ona dokunmuyorum yeni pushladığım ise değiştirdiğim kod her gün değişmeye çalışacağız.Yorumları vs en son silip yenisini ekleriz
+
+
+PROJECT 3 çalıştırılması ile alakalı.
+thread kütüphanesi yine windowsda çalışmayan bir kütüphane linux üzerinden çalıştırdıktan sonra çalıştırmak için gcc -o main main.c -pthread -lm yazın
+ardından ./main 1 100 4 1 gibi 4 input girecek şekilde çalıştırın .
