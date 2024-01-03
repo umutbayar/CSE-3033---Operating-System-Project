@@ -22,11 +22,11 @@ void *calculateSquareRoot1(void *arg) {
 }
 
 void* calculateSquareRootSum2(void* arg) {
-    long long int* args = (long long int*)arg;
-    long long int start = args[0];
-    long long int end = args[1];
+    int thread_id = *(int *)arg;
+    long long int thread_start = start_range + (end_range - start_range + 1) * thread_id / num_threads;
+    long long int thread_end = start_range + (end_range - start_range + 1) * (thread_id + 1) / num_threads - 1;
 
-    for (long long int x = start; x <= end; x++) {
+    for (long long int x = thread_start; x <= thread_end; x++) {
         pthread_mutex_lock(&sum_mutex);
         global_sqrt_sum += sqrt(x);
         pthread_mutex_unlock(&sum_mutex);
@@ -81,20 +81,10 @@ int main(int argc, char *argv[]) {
     }
     break;
    case 2:
-     long long int range = end_range - start_range + 1;
-    long long int chunkSize = range / num_threads;
-
-    
-   long long int *threadArgs = (long long int *)malloc(2 * sizeof(long long int));
 
     for (int i = 0; i < num_threads; ++i) {
-        long long int threadStart = start_range + i * chunkSize;
-        long long int threadEnd = (i == num_threads - 1) ? end_range : threadStart + chunkSize - 1;
-
-        threadArgs[0] = threadStart;
-        threadArgs[1] = threadEnd;
-
-        pthread_create(&threads[i], NULL, calculateSquareRootSum2, (void*)&threadArgs[i]);
+        thread_ids[i] = i;
+        pthread_create(&threads[i], NULL, calculateSquareRootSum2, (void *)&thread_ids[i]);
     }
 
     for (int i = 0; i < num_threads; ++i) {
@@ -102,10 +92,6 @@ int main(int argc, char *argv[]) {
     }
    break;
    case 3:
-    long long int range3 = end_range - start_range + 1;
-    long long int chunkSize3 = range3 / num_threads;
-
-
       for (int i = 0; i < num_threads; ++i) {
         thread_ids[i] = i;
         pthread_create(&threads[i], NULL, calculateSquareRoot3, (void *)&thread_ids[i]);
