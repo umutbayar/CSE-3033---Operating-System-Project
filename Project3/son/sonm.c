@@ -16,8 +16,6 @@ void *calculateSquareRoot1(void *arg) {
     for (long long int x = thread_start; x <= thread_end; ++x) {
         global_sqrt_sum += sqrt(x);
     }
-   
-
     pthread_exit(NULL);
 }
 
@@ -31,11 +29,8 @@ void* calculateSquareRootSum2(void* arg) {
         global_sqrt_sum += sqrt(x);
         pthread_mutex_unlock(&sum_mutex);
     }
-
     pthread_exit(NULL);
 }
-
-
 
  void *calculateSquareRoot3(void *arg) {
     int thread_id = *(int *)arg;
@@ -50,7 +45,6 @@ void* calculateSquareRootSum2(void* arg) {
     pthread_mutex_lock(&sum_mutex);
     global_sqrt_sum += local_sqrt_sum;
     pthread_mutex_unlock(&sum_mutex);
-
     pthread_exit(NULL);
 }
 
@@ -72,8 +66,7 @@ int main(int argc, char *argv[]) {
    case 1:
     for (int i = 0; i < num_threads; ++i) {
         thread_ids[i] = i;
-       int createres  = pthread_create(&threads[i], NULL, calculateSquareRoot1, (void *)&thread_ids[i]);
-      printf("%d",createres);
+        pthread_create(&threads[i], NULL, calculateSquareRoot1, (void *)&thread_ids[i]);
     }
 
     for (int i = 0; i < num_threads; ++i) {
@@ -81,6 +74,9 @@ int main(int argc, char *argv[]) {
     }
     break;
    case 2:
+     long long int range = end_range - start_range + 1;
+    long long int chunkSize = range / num_threads;
+   long long int *threadArgs = (long long int *)malloc(2 * sizeof(long long int));
 
     for (int i = 0; i < num_threads; ++i) {
         thread_ids[i] = i;
@@ -103,7 +99,6 @@ int main(int argc, char *argv[]) {
    break;
    }
     
-
     printf("Toplam karekök: %.5e\n", global_sqrt_sum);
     
     return 0;
