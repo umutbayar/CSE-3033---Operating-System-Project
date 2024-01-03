@@ -13,7 +13,6 @@ void *calculateSquareRoot1(void *arg) {
     long long int thread_start = start_range + (end_range - start_range + 1) * thread_id / num_threads;
     long long int thread_end = start_range + (end_range - start_range + 1) * (thread_id + 1) / num_threads - 1;
 
-    double local_sum = 0.0;
     for (long long int x = thread_start; x <= thread_end; ++x) {
         global_sqrt_sum += sqrt(x);
     }
@@ -57,7 +56,7 @@ void* calculateSquareRootSum2(void* arg) {
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
-        printf("Usage: %s <end> <star> <num_threads> <method>\n", argv[0]);
+        printf("Usage: %s <start> <end> <num_threads> <method>\n", argv[0]);
         return 1;
     }
 
